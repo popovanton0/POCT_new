@@ -242,13 +242,19 @@ public class Main extends Application {
                             }
                             System.out.println("    Код " + n + " вопроса: " + editingQu.getFormatedResult());
                         }
-                        questions[0][Integer.parseInt(questionButton.getId())] = HowManyAnswers.newEditorOfQu(qText,
+                        questions[0][Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
+                                nQu,
+                                debug,
+                                this,
+                                primaryStage,
+                                1,
+                                true,
+                                qText,
                                 isRegistrSense,
                                 isSpaceSense,
                                 nAn,
                                 answers,
                                 checkBoxes,
-                                nQu, debug, this, primaryStage,
                                 answerType);
                     });
                 }
@@ -342,19 +348,21 @@ public class Main extends Application {
                 alert.getDialogPane().setExpandableContent(expContent);
 
                 Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == ButtonType.OK) {
-                    File file = new File("C:\\ROST_tests"); //для ОС Windows
-                    Desktop desktop = null;
+                try {
+                    if (result.get() == ButtonType.OK) {
+                        File file = new File("C:\\ROST_tests"); //для ОС Windows
+                        Desktop desktop = null;
 
-                    if (Desktop.isDesktopSupported()) {
-                        desktop = Desktop.getDesktop();
-                    }
-                    try {
-                        desktop.open(file);
-                    } catch (IOException e) {
-                        System.out.println(e);
-                    }
-                } else primaryStage.close();
+                        if (Desktop.isDesktopSupported()) {
+                            desktop = Desktop.getDesktop();
+                        }
+                        try {
+                            desktop.open(file);
+                        } catch (IOException e) {
+                            System.out.println(e);
+                        }
+                    } else primaryStage.close();
+                } catch (Exception e) {}
 
 
             } catch (IOException e) {
@@ -405,7 +413,7 @@ public class Main extends Application {
         int n = i + 1;
         Question question;
 
-        question = HowManyAnswers.newWindow(i + 1, debug, this, primaryStage, nQu);
+        question = HowManyAnswers.newWindow(i + 1, debug, this, primaryStage, nQu, false, "1", false, false, 1, new String[1], new boolean[1], new String[1]);
         if (debug) System.out.println("Вариантов ответа на " + n + " вопрос: " + question.nAn);
 
 

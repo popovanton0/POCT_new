@@ -24,8 +24,6 @@ public class Question {
         if (isSpaceSense) isSpaceSenseStr = "true";
         else isSpaceSenseStr = "false";
 
-        //boolean isTwiseTrue;
-
         for (int j = 0; j < checkBoxes.length; j++) {
             if (checkBoxes[j] == true) {
                 for (int k = 0; k < checkBoxes.length; k++) {
@@ -61,6 +59,30 @@ public class Question {
 
             ansewrsFmt = ansewrsFmt + answer;
 
+        }else  if (answerType == "Sort"){
+            for (int i = 0; i < nAn; i++) {
+                int n = i + 1;
+                String answer = "{" +
+                        "\"NUMBER\":" + n + "," +
+                        "\"TEXT\":null," +
+                        "\"VALUE\":\"<p>" + answers[i] + "</p>\\n\"" +
+                        "}";
+
+                if (i == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;
+                else ansewrsFmt = ansewrsFmt + answer + ",";
+            }
+        }else if (answerType == "Compiles"){
+            for (int j = 0; j < nAn; j++) {
+                int n = i + 1;
+                String answer = "{" +
+                        "\"NUMBER\":" + n + "," +
+                        "\"TEXT\":\"" + answers[i] + "\"," +
+                        "\"VALUE\":\"<p>" + answers[i + 5] + "</p>\\n\"" +
+                        "}";
+
+                if (i == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;
+                else ansewrsFmt = ansewrsFmt + answer + ",";
+            }
         }
 
         String Result = "{\"DELETEDATE\":null," +
