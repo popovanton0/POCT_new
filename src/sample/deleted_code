@@ -1,0 +1,16 @@
+//ДОБАВИТЬ ЕЩЁ ОДИН ВОПРОС
+        addOneQuBtn.setText("Добавить ещё один вопрос");
+        grid.add(addOneQuBtn, 1, 3);
+        addOneQuBtn.setOnAction(event -> {
+
+            //ДОБАВЛЯЕМ ВОПРОС
+            int n = nCreatedQu;
+            int ng = nCreatedQu + 1;
+            Label Qu = new Label("Вопрос " + ng + ":");
+            grid.add(Qu, 0, n + 4);
+            TextField QuTextField = new TextField();
+            grid.add(QuTextField, 1, n + 4);
+            nCreatedQu = nCreatedQu + 1;
+        });
+
+-----------------------------------------------------------------------------
