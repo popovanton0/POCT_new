@@ -73,29 +73,7 @@ public class HowManyAnswers {
             } else isSence[1] = false;
         });
 
-
-        Label HowManyAnswers = new Label("Количество ответов: ");
-
-        GridPane gridForRadioButtonAnswers = new GridPane();
-        gridForRadioButtonAnswers.setGridLinesVisible(debug);
-
-
-        RadioButton HowManyAnswersRadioButton2 = new RadioButton();
-        HowManyAnswersRadioButton2.setText("2 ");
-
-        HowManyAnswersRadioButton2.setSelected(true);
-        RadioButton HowManyAnswersRadioButton3 = new RadioButton();
-        HowManyAnswersRadioButton3.setText("3 ");
-
-        RadioButton HowManyAnswersRadioButton4 = new RadioButton();
-        HowManyAnswersRadioButton4.setText("4 ");
-
-        RadioButton HowManyAnswersRadioButton5 = new RadioButton();
-        HowManyAnswersRadioButton5.setText("5 ");
-
-        RadioButton HowManyAnswersRadioButton6 = new RadioButton();
-        HowManyAnswersRadioButton6.setText("6 ");
-
+        //Сетка для типа ответов
         GridPane gridForAnswerType = new GridPane();
         gridForAnswerType.setHgap(10);
         gridForAnswerType.setVgap(10);
@@ -116,6 +94,35 @@ public class HowManyAnswers {
         answerTypeComplies.setToggleGroup(toggleGroup);
         answerTypeSort.setToggleGroup(toggleGroup);
 
+        //Сетка для количества ответов
+        Label HowManyAnswers = new Label("Количество ответов: ");
+        GridPane gridForRadioButtonAnswers = new GridPane();
+        gridForRadioButtonAnswers.setGridLinesVisible(debug);
+
+        RadioButton HowManyAnswersRadioButton2 = new RadioButton();
+        HowManyAnswersRadioButton2.setText("2 ");
+
+        HowManyAnswersRadioButton2.setSelected(true);
+        RadioButton HowManyAnswersRadioButton3 = new RadioButton();
+        HowManyAnswersRadioButton3.setText("3 ");
+
+        RadioButton HowManyAnswersRadioButton4 = new RadioButton();
+        HowManyAnswersRadioButton4.setText("4 ");
+
+        RadioButton HowManyAnswersRadioButton5 = new RadioButton();
+        HowManyAnswersRadioButton5.setText("5 ");
+
+        RadioButton HowManyAnswersRadioButton6 = new RadioButton();
+        HowManyAnswersRadioButton6.setText("6 ");
+        //Добавляем RadioButton для количество ответов в сетку
+        gridForRadioButtonAnswers.add(HowManyAnswersRadioButton2, 0, 0);
+        gridForRadioButtonAnswers.add(HowManyAnswersRadioButton3, 1, 0);
+        gridForRadioButtonAnswers.add(HowManyAnswersRadioButton4, 2, 0);
+        gridForRadioButtonAnswers.add(HowManyAnswersRadioButton5, 3, 0);
+        gridForRadioButtonAnswers.add(HowManyAnswersRadioButton6, 4, 0);
+
+
+        //Сетка для текстовых полей с ответами
         GridPane gridForTextingAnswers = new GridPane();
         gridForTextingAnswers.setGridLinesVisible(debug);
         ScrollPane scrollPane = new ScrollPane(gridForTextingAnswers);
@@ -126,6 +133,7 @@ public class HowManyAnswers {
         answerTypeDirectInput.setOnAction(event -> {
             grid.getChildren().remove(gridForRadioButtonAnswers);
             grid.getChildren().remove(HowManyAnswers);
+            //Убираем поля с ответами
             grid.getChildren().remove(scrollPane);
             grid.add(directInputTextField, 0, 4);
             nAn = 1;
@@ -139,11 +147,6 @@ public class HowManyAnswers {
             grid.add(HowManyAnswers, 0, 4);
             grid.add(gridForRadioButtonAnswers, 0, 5);
             grid.add(scrollPane, 0, 6);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton2, 0, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton3, 1, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton4, 2, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton5, 3, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton6, 4, 0);
             answerType = "One";
         });
 
@@ -628,6 +631,27 @@ public class HowManyAnswers {
         gridForRadioButtonAnswers.setGridLinesVisible(debug);/*
         grid.add(gridForRadioButtonAnswers, 0, 4);*/
 
+        // ТИП ОТВЕТОВ
+        GridPane gridForAnswerType = new GridPane();
+        gridForAnswerType.setHgap(10);
+        gridForAnswerType.setVgap(10);
+        gridForAnswerType.setGridLinesVisible(debug);
+        grid.add(gridForAnswerType, 0, 3);
+        ToggleGroup toggleGroup = new ToggleGroup();
+        RadioButton answerTypeUsual = new RadioButton("Один или несколько вариантов ответа");
+        RadioButton answerTypeDirectInput = new RadioButton("Прямой ввод");
+        RadioButton answerTypeComplies = new RadioButton("Соответствие");
+        RadioButton answerTypeSort = new RadioButton("Сортировка");
+        gridForAnswerType.add(answerTypeUsual, 0, 0);
+        gridForAnswerType.add(answerTypeDirectInput, 1, 0);
+        gridForAnswerType.add(answerTypeComplies, 2, 0);
+        gridForAnswerType.add(answerTypeSort, 3, 0);
+
+        answerTypeUsual.setToggleGroup(toggleGroup);
+        answerTypeDirectInput.setToggleGroup(toggleGroup);
+        answerTypeComplies.setToggleGroup(toggleGroup);
+        answerTypeSort.setToggleGroup(toggleGroup);
+
         RadioButton HowManyAnswersRadioButton2 = new RadioButton();
         HowManyAnswersRadioButton2.setText("2 ");
         gridForRadioButtonAnswers.add(HowManyAnswersRadioButton2, 0, 0);
@@ -653,26 +677,7 @@ public class HowManyAnswers {
         HowManyAnswersRadioButton6.setText("6 ");
         gridForRadioButtonAnswers.add(HowManyAnswersRadioButton6, 4, 0);
         if (nAn == 6) HowManyAnswersRadioButton6.setSelected(true);
-// ТИП ОТВЕТОВ
-        GridPane gridForAnswerType = new GridPane();
-        gridForAnswerType.setHgap(10);
-        gridForAnswerType.setVgap(10);
-        gridForAnswerType.setGridLinesVisible(debug);
-        grid.add(gridForAnswerType, 0, 3);
-        ToggleGroup toggleGroup = new ToggleGroup();
-        RadioButton answerTypeUsual = new RadioButton("Один или несколько вариантов ответа");
-        RadioButton answerTypeDirectInput = new RadioButton("Прямой ввод");
-        RadioButton answerTypeComplies = new RadioButton("Соответствие");
-        RadioButton answerTypeSort = new RadioButton("Сортировка");
-        gridForAnswerType.add(answerTypeUsual, 0, 0);
-        gridForAnswerType.add(answerTypeDirectInput, 1, 0);
-        gridForAnswerType.add(answerTypeComplies, 2, 0);
-        gridForAnswerType.add(answerTypeSort, 3, 0);
 
-        answerTypeUsual.setToggleGroup(toggleGroup);
-        answerTypeDirectInput.setToggleGroup(toggleGroup);
-        answerTypeComplies.setToggleGroup(toggleGroup);
-        answerTypeSort.setToggleGroup(toggleGroup);
 
         GridPane gridForTextingAnswers = new GridPane();
         gridForTextingAnswers.setGridLinesVisible(debug);
@@ -714,11 +719,6 @@ public class HowManyAnswers {
             grid.add(howManyAnswersLabel, 0, 4);
             grid.add(gridForRadioButtonAnswers, 0, 5);
             grid.add(scrollPaneForTextingAnswers, 0, 6);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton2, 0, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton3, 1, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton4, 2, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton5, 3, 0);
-            gridForRadioButtonAnswers.add(HowManyAnswersRadioButton6, 4, 0);
             answerType[0] = "One";
         });
 
@@ -825,17 +825,10 @@ public class HowManyAnswers {
         answerField6.setPromptText("Текст 6 ответа");
 
         if (answerType[0] == "One") {
-            for (int i = 1; i < nAn1; i++) {
                 gridForTextingAnswers.add(answer1, 0, 0);
                 gridForTextingAnswers.add(answerField1, 1, 0);
                 gridForTextingAnswers.add(answerChoose1, 2, 0);
                 gridForTextingAnswers.add(btn1, 3, 0);
-
-                answer1.setId(Integer.toString(i));
-                answerField1.setId(Integer.toString(i));
-                answerChoose1.setId(Integer.toString(i));
-                btn1.setId(Integer.toString(i));
-            }
 
 
             gridForTextingAnswers.add(answer2, 0, 1);
