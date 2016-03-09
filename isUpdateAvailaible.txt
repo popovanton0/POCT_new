@@ -1,2 +1,2 @@
 Доступно обновление !
-[Нажмите](https://github.com/popovanton0/POCT_new/edit/gh-pages/isUpdateAvailaible.txt) для обновления
+Нажмите для обновления
