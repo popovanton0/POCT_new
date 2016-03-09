@@ -75,14 +75,14 @@ public class Question {
             }
         }else if (answerType == "Compiles"){
             for (int j = 0; j < nAn; j++) {
-                int n = i + 1;
+                int n = j + 1;
                 String answer = "{" +
                         "\"NUMBER\":" + n + "," +
-                        "\"TEXT\":\"" + answers[i] + "\"," +
-                        "\"VALUE\":\"<p>" + answers[i + 5] + "</p>\\n\"" +
+                        "\"TEXT\":\"" + answers[j] + "\"," +
+                        "\"VALUE\":\"<p>" + answers[j + 6] + "</p>\\n\"" +
                         "}";
 
-                if (i == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;
+                if (j == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;
                 else ansewrsFmt = ansewrsFmt + answer + ",";
             }
         }
