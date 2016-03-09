@@ -38,9 +38,11 @@ import java.util.Set;
 
 public class Main extends Application {
 
+    public static final String isUpdateAvailable = "https://app.simplenote.com/publish/L787jN";
+    //public static final String isUpdateAvailable = "https://raw.githubusercontent.com/popovanton0/POCT_new/gh-pages/isUpdateAvailaible.txt";
     private static Sender tlsSender = new Sender("popovanton0@gmail.com", "ilmtcbelwvtnlugv");
     double version = 2.0;
-    boolean debug = true;
+    boolean debug = false;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     GridPane grid = new GridPane();
     Button btn = new Button();
@@ -169,7 +171,8 @@ public class Main extends Application {
 
         //ЗАГРУЗКА ТЕСТОВ
         Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
-        grid.add(loadTestFromFileBtn, 1, 5);
+        loadTestFromFileBtn.setTooltip(new Tooltip("Тестовая фича, находится в разработке"));
+        if (debug) grid.add(loadTestFromFileBtn, 1, 5);
 
         loadTestFromFileBtn.setOnAction(event2 -> {
             String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
@@ -193,10 +196,10 @@ public class Main extends Application {
 
             try {
                 for (int j = 0; j < questionsArray.size(); j++) {
+                    questions[j] = new Question();
                     JsonObject object = (JsonObject) questionsArray.get(j);
 
-                    System.out.println(object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString() + "\n" +
-                            object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString());
+
                     questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString();
                     questions[j].answerType = object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString();
                     questions[j].isRegistrSense = false;
@@ -215,8 +218,8 @@ public class Main extends Application {
                     String[] answers = new String[jsonAnswers.size()];
                     boolean[] checkBoxes = new boolean[jsonAnswers.size()];
                     for (int k = 0; k < answers.length; k++) {
-                        answers[k] = jsonAnswers.get(k).getAsJsonObject().get("TEXT").toString();
-                        if (jsonAnswers.get(k).getAsJsonObject().get("VALUE").toString() == "True")
+                        answers[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString();
+                        if (jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString() == "True")
                             checkBoxes[k] = true;
                         else checkBoxes[k] = false;
                     }
@@ -233,13 +236,12 @@ public class Main extends Application {
 
             grid.getChildren().clear();
             GridPane pane = new GridPane();
-            ScrollPane scrollPane = new ScrollPane(pane);
             pane.setGridLinesVisible(debug);
             pane.setAlignment(Pos.CENTER);
             pane.setVgap(10);
             pane.setHgap(10);
             pane.setPadding(new Insets(15, 15, 15, 15));
-            Scene scene = new Scene(scrollPane);
+
 
 
             //СОЗДАНИЕ РЕДАКТОРА
@@ -247,11 +249,8 @@ public class Main extends Application {
 
 
             try {
-                pane.add(saveTestToFile, 2, nQu);
-                primaryStage.setScene(scene);
-                primaryStage.setMinHeight(120);
-                primaryStage.setMinWidth(410);
-                primaryStage.show();
+                pane.add(saveTestToFile, 2, questionsArray.size());
+                grid.add(pane, 0, 0);
             } catch (Exception e) {}
         });
 
@@ -287,13 +286,12 @@ public class Main extends Application {
 
                 grid.getChildren().clear();
                 GridPane pane = new GridPane();
-                ScrollPane scrollPane = new ScrollPane(pane);
                 pane.setGridLinesVisible(debug);
                 pane.setAlignment(Pos.CENTER);
                 pane.setVgap(10);
                 pane.setHgap(10);
                 pane.setPadding(new Insets(15, 15, 15, 15));
-                Scene scene = new Scene(scrollPane);
+
 
 
                 //СОЗДАНИЕ РЕДАКТОРА
@@ -302,7 +300,7 @@ public class Main extends Application {
 
 
                 pane.add(saveTestToFile, 2, nQu);
-                primaryStage.setScene(scene);
+                primaryStage.setScene(new Scene(new ScrollPane(pane)));
                 primaryStage.setMinHeight(120);
                 primaryStage.setMinWidth(410);
                 primaryStage.show();
@@ -425,7 +423,7 @@ public class Main extends Application {
         //ПОДГРУЖАЕМ ОБНОВЛЕНИЯ С ИНЕТА
         WebView isUpdate = new WebView();
         WebEngine isUpdateEngine = isUpdate.getEngine();
-        isUpdateEngine.load("https://app.simplenote.com/publish/L787jN");
+        isUpdateEngine.load(isUpdateAvailable);
         isUpdate.setMaxSize(220, 80);
         isUpdate.setOnMouseClicked(event -> {
             getHostServices().showDocument(updateUrl);

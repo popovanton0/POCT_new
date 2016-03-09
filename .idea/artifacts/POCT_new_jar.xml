@@ -5,7 +5,7 @@
       <element id="module-output" name="POCT_new" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/sun/mail/javax.mail/1.5.5/javax.mail-1.5.5.jar" path-in-jar="/" />
-      <element id="library" level="project" name="com.google.code.gson:gson:2.6.2" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.6.2/gson-2.6.2.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
