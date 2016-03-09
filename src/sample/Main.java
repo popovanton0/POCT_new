@@ -1,12 +1,13 @@
 package sample;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,9 +27,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import jdk.nashorn.internal.parser.JSONParser;
-import jdk.nashorn.internal.runtime.JSONFunctions;
-import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 
 import java.awt.*;
 import java.io.*;
@@ -172,50 +170,79 @@ public class Main extends Application {
         //ЗАГРУЗКА ТЕСТОВ
         Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
         grid.add(loadTestFromFileBtn, 1, 5);
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
 
-            }
-        });
-
-        btn.setOnAction(event3 -> {
-
-        });
-        btn.setOnAction(event2 -> {
-            String loadedQu = "{\"INFO\":\"\",\"NAME\":\"назв\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":0,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"назв\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p></p>\\n\",\"NAME\":\"Вопрос 1\",\"DIFFICULTID\":6,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>1</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>2</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
+        loadTestFromFileBtn.setOnAction(event2 -> {
+            String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
             JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
-            JsonArray questionsArray = start.getAsJsonObject().getAsJsonArray("THEMES").getAsJsonObject().getAsJsonArray("QUESTIONS");
+            JsonArray questionsArray = null;
+            try {
+                questionsArray = start.getAsJsonObject().getAsJsonArray("THEMES").getAsJsonObject().getAsJsonArray("QUESTIONS");
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+            }
 
             //МАССИВ ВОРОСОВ
             Question[] questions = new Question[questionsArray.size()];
             //ПОЛУЧАЕМ МАССИВ ВОПРОСОВ ИЗ JSON
-            for (int i = 0; i < questionsArray.size(); i++) {
-                JsonObject object = (JsonObject) questionsArray.get(i);
-                for (int j = 0; j < object.getAsJsonArray().size(); j++) {
-                    JsonParser parser = new JsonParser();
 
-                    Question loadingQuestion = null;
+            try {
+                for (int j = 0; j < questionsArray.size(); j++) {
+                    JsonObject object = (JsonObject) questionsArray.get(j);
 
-                    loadingQuestion.qText = object.getAsJsonObject("TEXT").getAsString();
-                    loadingQuestion.isRegistrSense = false;
-                    loadingQuestion.isSpaceSense = false;
+
+                    questions[j].qText = object.getAsJsonObject("TEXT").getAsString();
+                    questions[j].answerType = object.getAsJsonObject("ANSWERTYPE").getAsString();
+                    questions[j].isRegistrSense = false;
+                    questions[j].isSpaceSense = false;
+                    questions[j].i = j + 1;
 
                     if (object.getAsJsonObject("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
-                        loadingQuestion.isRegistrSense = true;
+                        questions[j].isRegistrSense = true;
 
                     if (object.getAsJsonObject("ISSPACESENSITIVENESS").getAsString().equals("true"))
-                        loadingQuestion.isSpaceSense = true;
+                        questions[j].isSpaceSense = true;
 
                     //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
                     JsonArray jsonAnswers = object.getAsJsonArray("ANSWERS");
+                    questions[j].nAn = jsonAnswers.size();
                     String[] answers = new String[jsonAnswers.size()];
+                    boolean[] checkBoxes = new boolean[jsonAnswers.size()];
                     for (int k = 0; k < answers.length; k++) {
                         answers[k] = jsonAnswers.get(k).getAsJsonObject().get("TEXT").toString();
+                        if (jsonAnswers.get(k).getAsJsonObject().get("VALUE").toString() == "True")
+                            checkBoxes[k] = true;
+                        else checkBoxes[k] = false;
                     }
+                    questions[j].answers = answers;
+                    questions[j].checkBoxes = checkBoxes;
 
                 }
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
             }
+
+
+            grid.getChildren().clear();
+            GridPane pane = new GridPane();
+            ScrollPane scrollPane = new ScrollPane(pane);
+            pane.setGridLinesVisible(debug);
+            pane.setAlignment(Pos.CENTER);
+            pane.setVgap(10);
+            pane.setHgap(10);
+            pane.setPadding(new Insets(15, 15, 15, 15));
+            Scene scene = new Scene(scrollPane);
+
+
+            //СОЗДАНИЕ РЕДАКТОРА
+            openQuestionsEditor(questions.length, questions, primaryStage, pane);
+
+
+
+            pane.add(saveTestToFile, 2, nQu);
+            primaryStage.setScene(scene);
+            primaryStage.setMinHeight(120);
+            primaryStage.setMinWidth(410);
+            primaryStage.show();
         });
 
         //КНОПКА СОЗДАНИЯ ВОПРОСА
@@ -260,58 +287,10 @@ public class Main extends Application {
 
 
                 //СОЗДАНИЕ РЕДАКТОРА
-                for (int i = 0; i < nQu; i++) {
-                    int n = i + 1;
-                    Label questionLabel = new Label("Вопрос № " + n);
-                    Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
-                    questionButton.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
-                    questionLabel.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
-                    pane.add(questionLabel, 0, i);
-                    pane.add(questionButton, 1, i);
-                    questionButton.setId(Integer.toString(i));
-
-                    questionButton.setOnAction(event1 -> {
+                openQuestionsEditor(nQu, questions[0], primaryStage, pane);
 
 
-                        Question editingQu = questions[0][Integer.parseInt(questionButton.getId())];
 
-                        String qText = editingQu.qText;
-                        boolean isRegistrSense = editingQu.isRegistrSense;
-                        boolean isSpaceSense = editingQu.isSpaceSense;
-                        int nAn = editingQu.nAn;
-                        String answers[] = editingQu.answers;
-                        boolean[] checkBoxes = editingQu.checkBoxes;
-                        int nQu = editingQu.i;
-                        String[] answerType = new String[1];
-                        answerType[0] = editingQu.answerType;
-                        if (debug) {
-                            System.out.println("[ПРИ РЕДАКТИРОВАНИИ " + editingQu.i + " ВОПРОСА]\nТекст " + editingQu.i + " вопроса: " + editingQu.qText);
-                            for (int h = 0; h < answers.length; h++) {
-                                int j = h + 1;
-                                System.out.println("    Текст " + j + " ответа: " + answers[h]);
-                            }
-                            for (int h = 0; h < checkBoxes.length; h++) {
-                                int j = h + 1;
-                                System.out.println("    Правильность " + j + " ответа: " + checkBoxes[h]);
-                            }
-                            System.out.println("    Код " + n + " вопроса: " + editingQu.getFormatedResult());
-                        }
-                        questions[0][Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
-                                nQu,
-                                debug,
-                                this,
-                                primaryStage,
-                                1,
-                                true,
-                                qText,
-                                isRegistrSense,
-                                isSpaceSense,
-                                nAn,
-                                answers,
-                                checkBoxes,
-                                answerType);
-                    });
-                }
                 pane.add(saveTestToFile, 2, nQu);
                 primaryStage.setScene(scene);
                 primaryStage.setMinHeight(120);
@@ -458,6 +437,61 @@ public class Main extends Application {
         if (debug == true) grid.setGridLinesVisible(true);
         primaryStage.show();
 
+    }
+
+    public void openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
+        for (int i = 0; i < nQu; i++) {
+            int n = i + 1;
+            Label questionLabel = new Label("Вопрос № " + n);
+            Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
+            questionButton.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
+            questionLabel.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
+            pane.add(questionLabel, 0, i);
+            pane.add(questionButton, 1, i);
+            questionButton.setId(Integer.toString(i));
+
+            questionButton.setOnAction(event1 -> {
+
+
+                Question editingQu = question[Integer.parseInt(questionButton.getId())];
+
+                String qText = editingQu.qText;
+                boolean isRegistrSense = editingQu.isRegistrSense;
+                boolean isSpaceSense = editingQu.isSpaceSense;
+                int nAn = editingQu.nAn;
+                String answers[] = editingQu.answers;
+                boolean[] checkBoxes = editingQu.checkBoxes;
+                int nQu1 = editingQu.i;
+                String[] answerType = new String[1];
+                answerType[0] = editingQu.answerType;
+                if (debug) {
+                    System.out.println("[ПРИ РЕДАКТИРОВАНИИ " + editingQu.i + " ВОПРОСА]\nТекст " + editingQu.i + " вопроса: " + editingQu.qText);
+                    for (int h = 0; h < answers.length; h++) {
+                        int j = h + 1;
+                        System.out.println("    Текст " + j + " ответа: " + answers[h]);
+                    }
+                    for (int h = 0; h < checkBoxes.length; h++) {
+                        int j = h + 1;
+                        System.out.println("    Правильность " + j + " ответа: " + checkBoxes[h]);
+                    }
+                    System.out.println("    Код " + n + " вопроса: " + editingQu.getFormatedResult());
+                }
+                question[Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
+                        nQu1,
+                        debug,
+                        this,
+                        primaryStage,
+                        1,
+                        true,
+                        qText,
+                        isRegistrSense,
+                        isSpaceSense,
+                        nAn,
+                        answers,
+                        checkBoxes,
+                        answerType);
+            });
+        }
     }
 
     private Label getLabel(String text) {
