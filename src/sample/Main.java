@@ -174,32 +174,39 @@ public class Main extends Application {
         loadTestFromFileBtn.setOnAction(event2 -> {
             String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
             JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
+            JsonArray themesArray = null;
             JsonArray questionsArray = null;
             try {
-                questionsArray = start.getAsJsonObject().getAsJsonArray("THEMES").getAsJsonObject().getAsJsonArray("QUESTIONS");
+                themesArray = start.getAsJsonObject().getAsJsonArray("THEMES");
+                questionsArray = (JsonArray) themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
             } catch (Exception e) {
+                e.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+                primaryStage.close();
             }
 
             //МАССИВ ВОРОСОВ
-            Question[] questions = new Question[questionsArray.size()];
+            Question[] questions;
+            questions = new Question[questionsArray.size()];
+            if (questions.length == 0) showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: массив questions = 0, Main.java:196", false, new GridPane());
             //ПОЛУЧАЕМ МАССИВ ВОПРОСОВ ИЗ JSON
 
             try {
                 for (int j = 0; j < questionsArray.size(); j++) {
                     JsonObject object = (JsonObject) questionsArray.get(j);
 
-
-                    questions[j].qText = object.getAsJsonObject("TEXT").getAsString();
-                    questions[j].answerType = object.getAsJsonObject("ANSWERTYPE").getAsString();
+                    System.out.println(object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString() + "\n" +
+                            object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString());
+                    questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString();
+                    questions[j].answerType = object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString();
                     questions[j].isRegistrSense = false;
                     questions[j].isSpaceSense = false;
                     questions[j].i = j + 1;
 
-                    if (object.getAsJsonObject("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
+                    if (object.getAsJsonObject().getAsJsonPrimitive("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
                         questions[j].isRegistrSense = true;
 
-                    if (object.getAsJsonObject("ISSPACESENSITIVENESS").getAsString().equals("true"))
+                    if (object.getAsJsonObject().getAsJsonPrimitive("ISSPACESENSITIVENESS").getAsString().equals("true"))
                         questions[j].isSpaceSense = true;
 
                     //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
@@ -218,7 +225,9 @@ public class Main extends Application {
 
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+                primaryStage.close();
             }
 
 
@@ -237,12 +246,13 @@ public class Main extends Application {
             openQuestionsEditor(questions.length, questions, primaryStage, pane);
 
 
-
-            pane.add(saveTestToFile, 2, nQu);
-            primaryStage.setScene(scene);
-            primaryStage.setMinHeight(120);
-            primaryStage.setMinWidth(410);
-            primaryStage.show();
+            try {
+                pane.add(saveTestToFile, 2, nQu);
+                primaryStage.setScene(scene);
+                primaryStage.setMinHeight(120);
+                primaryStage.setMinWidth(410);
+                primaryStage.show();
+            } catch (Exception e) {}
         });
 
         //КНОПКА СОЗДАНИЯ ВОПРОСА
@@ -424,7 +434,7 @@ public class Main extends Application {
         //УБИРАЕМ SCROLLBAR
         isUpdate.getChildrenUnmodifiable().addListener(new ListChangeListener<Node>() {
             @Override
-            public void onChanged(ListChangeListener.Change<? extends Node> change) {
+            public void onChanged(Change<? extends Node> change) {
                 Set<Node> deadSeaScrolls = isUpdate.lookupAll(".scroll-bar");
                 for (Node scroll : deadSeaScrolls) {
                     scroll.setVisible(false);
