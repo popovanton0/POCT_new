@@ -36,7 +36,7 @@ public class Main extends Application {
 
     private static Sender tlsSender = new Sender("popovanton0@gmail.com", "ilmtcbelwvtnlugv");
     double version = 2.0;
-    boolean debug = true;
+    boolean debug = true ;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     GridPane grid = new GridPane();
     Button btn = new Button();

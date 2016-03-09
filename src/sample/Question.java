@@ -24,11 +24,13 @@ public class Question {
         if (isSpaceSense) isSpaceSenseStr = "true";
         else isSpaceSenseStr = "false";
 
-        for (int j = 0; j < checkBoxes.length; j++) {
-            if (checkBoxes[j] == true) {
-                for (int k = 0; k < checkBoxes.length; k++) {
-                    if (k != j) {
-                        if (checkBoxes[k]) answerType = "Many";
+        if (answerType == "One" || answerType == "Many") {
+            for (int j = 0; j < checkBoxes.length; j++) {
+                if (checkBoxes[j] == true) {
+                    for (int k = 0; k < checkBoxes.length; k++) {
+                        if (k != j) {
+                            if (checkBoxes[k]) answerType = "Many";
+                        }
                     }
                 }
             }
