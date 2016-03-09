@@ -1,9 +1,12 @@
 package sample;
 
+import com.google.gson.*;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -23,6 +26,9 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import jdk.nashorn.internal.parser.JSONParser;
+import jdk.nashorn.internal.runtime.JSONFunctions;
+import jdk.nashorn.internal.runtime.regexp.joni.ast.StringNode;
 
 import java.awt.*;
 import java.io.*;
@@ -36,7 +42,7 @@ public class Main extends Application {
 
     private static Sender tlsSender = new Sender("popovanton0@gmail.com", "ilmtcbelwvtnlugv");
     double version = 2.0;
-    boolean debug = true ;
+    boolean debug = true;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     GridPane grid = new GridPane();
     Button btn = new Button();
@@ -163,10 +169,58 @@ public class Main extends Application {
                 }
         );
 
+        //ЗАГРУЗКА ТЕСТОВ
+        Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
+        grid.add(loadTestFromFileBtn, 1, 5);
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+            }
+        });
+
+        btn.setOnAction(event3 -> {
+
+        });
+        btn.setOnAction(event2 -> {
+            String loadedQu = "{\"INFO\":\"\",\"NAME\":\"назв\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":0,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"назв\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p></p>\\n\",\"NAME\":\"Вопрос 1\",\"DIFFICULTID\":6,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>1</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>2</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
+            JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
+            JsonArray questionsArray = start.getAsJsonObject().getAsJsonArray("THEMES").getAsJsonObject().getAsJsonArray("QUESTIONS");
+
+            //МАССИВ ВОРОСОВ
+            Question[] questions = new Question[questionsArray.size()];
+            //ПОЛУЧАЕМ МАССИВ ВОПРОСОВ ИЗ JSON
+            for (int i = 0; i < questionsArray.size(); i++) {
+                JsonObject object = (JsonObject) questionsArray.get(i);
+                for (int j = 0; j < object.getAsJsonArray().size(); j++) {
+                    JsonParser parser = new JsonParser();
+
+                    Question loadingQuestion = null;
+
+                    loadingQuestion.qText = object.getAsJsonObject("TEXT").getAsString();
+                    loadingQuestion.isRegistrSense = false;
+                    loadingQuestion.isSpaceSense = false;
+
+                    if (object.getAsJsonObject("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
+                        loadingQuestion.isRegistrSense = true;
+
+                    if (object.getAsJsonObject("ISSPACESENSITIVENESS").getAsString().equals("true"))
+                        loadingQuestion.isSpaceSense = true;
+
+                    //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
+                    JsonArray jsonAnswers = object.getAsJsonArray("ANSWERS");
+                    String[] answers = new String[jsonAnswers.size()];
+                    for (int k = 0; k < answers.length; k++) {
+                        answers[k] = jsonAnswers.get(k).getAsJsonObject().get("TEXT").toString();
+                    }
+
+                }
+            }
+        });
 
         //КНОПКА СОЗДАНИЯ ВОПРОСА
         btn.setText("Далее");
-        grid.add(btn, 1,  4);
+        grid.add(btn, 1, 4);
 
 
         final Question[][] questions = new Question[1][1];
@@ -362,7 +416,8 @@ public class Main extends Application {
                             System.out.println(e);
                         }
                     } else primaryStage.close();
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
 
             } catch (IOException e) {
