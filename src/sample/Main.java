@@ -29,11 +29,11 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.*;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 
 public class Main extends Application {
@@ -42,7 +42,7 @@ public class Main extends Application {
     //public static final String isUpdateAvailable = "https://raw.githubusercontent.com/popovanton0/POCT_new/gh-pages/isUpdateAvailaible.txt";
     private static Sender tlsSender = new Sender("popovanton0@gmail.com", "ilmtcbelwvtnlugv");
     double version = 2.0;
-    boolean debug = true;
+    boolean debug = false;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     GridPane grid = new GridPane();
     Button btn = new Button();
@@ -79,18 +79,24 @@ public class Main extends Application {
         grid.setPadding(new Insets(25, 25, 25, 25));
         ScrollPane root = new ScrollPane(grid);
 
+        if (debug){
+            grid.add(new Label("ВНИМАНИЕ !!! Вы находитесь в режиме \nразработчика. В этом режиме\n программа работает \nНЕ стабильно. \nЕсли вы не знаете что это, \nперезапустите програму"), 0, 6);
+            Label look = new Label(" <<== ВНИМАНИЕ !!!");
+            grid.add(look, 1, 6);
+        }
 
         //Заголовок
-
         easterEgg();
         grid.add(scenetitle, 0, 0, 2, 1);
 
         Button feedback = new Button("Отзыв");
         feedback.setOnAction(event3 -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Отзыв о программе");
             GridPane emailPane = new GridPane();
+            emailPane.setGridLinesVisible(debug);
             Label textFeedback = new Label("Текст отзыва:");
-            TextField textField = new TextField();
+            TextArea textField = new TextArea();
             Label emailOfUserLabel = new Label("Ваша почта для обратной связи: ");
             TextField emailOfUser = new TextField();
             emailOfUser.setPromptText("ваша_почта@mail.ru");
@@ -104,14 +110,51 @@ public class Main extends Application {
             //Date currentDate = new Date();
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK) {
+                Alert alert1 = new Alert(Alert.AlertType.INFORMATION);
+                alert1.setHeaderText("Отправка ...");
+                alert1.setContentText("Идёт отправка отзыва. Ваш отзыв скопирован в буфер обмена.");
+                alert1.show();
+                String msgToCopy = textField.getText();
+                //Копируем в буфер обмена
+                try {
+                    if (copyToClipBoard(msgToCopy)) return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                String isDebug;
+                String systemProperties = "";
+                if (debug) isDebug = "true";
+                else isDebug = "false";
+                System.setProperty("isDebugModeEnabled", isDebug);
+
+                //Делаем красивый лист
+                Properties p = null;
+                try {
+                    p = System.getProperties();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Enumeration keys = p.keys();
+                while (keys.hasMoreElements()) {
+                    String key = (String)keys.nextElement();
+                    String value = (String)p.get(key);
+                    systemProperties = systemProperties + "\n" + key + ": " + value;
+                }
+
+
+                //Отправляем письмо
                 tlsSender.send("[POCT] Отзыв",
-                        textField.getText() + "\n" +
+                        "Текст отзыва:\n" + textField.getText() + "---------------------------------------------\n" +
                                 "Почта для связи с user`ом: " + emailOfUser.getText() + "\n" +
                                 "Версия программы: " + Double.toString(version) + "\n" +
-                                "Дата отправки: " + new Date(), "popovanton0@gmail.com", "help_review@mail.ru");
-                Alert alert1 = new Alert(Alert.AlertType.INFORMATION);
-                alert1.setHeaderText("Отзыв успешно отправлен !");
-                alert1.showAndWait();
+                                "Дата отправки: " + new Date() + "\n СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------------------------------\n" + systemProperties +
+                                "\n ДР. СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------------------------------\n" + System.getenv(),
+                        "popovanton0@gmail.com", "help_review@mail.ru");
+                alert1.close();
+                Alert alert11 = new Alert(Alert.AlertType.INFORMATION);
+                alert11.setHeaderText("Отзыв успешно отправлен !");
+                alert11.showAndWait();
             }
         });
         grid.add(feedback, 1, 0);
@@ -441,10 +484,25 @@ public class Main extends Application {
         });
         //ДЕЛАЕМ СЦЕНУ
         Scene scene = new Scene(root, 520, 375);
+        if (debug) {
+            primaryStage.setMinWidth(560);
+            primaryStage.setMinHeight(465);
+        }
         primaryStage.setScene(scene);
         if (debug == true) grid.setGridLinesVisible(true);
         primaryStage.show();
 
+    }
+
+    public boolean copyToClipBoard(String msgToCopy) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection(msgToCopy);
+        try{
+            clipboard.setContents(stringSelection, (clipboard1, contents) -> {});
+        }catch (Exception e) {
+            return true;
+        }
+        return false;
     }
 
     public void openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {

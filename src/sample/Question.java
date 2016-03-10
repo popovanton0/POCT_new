@@ -86,7 +86,6 @@ public class Question {
                 else ansewrsFmt = ansewrsFmt + answer + ",";
             }
         }
-        System.out.println("i в форматировании вопроса в строку = " + i);
         String Result = "{\"DELETEDATE\":null," +
                 "\"NUMBER\":" + i + "," +
                 "\"COMMENT\":\"\"," +
