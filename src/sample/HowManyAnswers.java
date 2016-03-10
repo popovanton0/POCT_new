@@ -30,6 +30,7 @@ public class HowManyAnswers {
                                      String[] answersLoaded,
                                      boolean[] checkBoxesLoaded,
                                      final String[] answerType) {
+        if (debug) System.out.println("при создании окна = " + nQu);
 
         Stage window = new Stage();
         window.initModality(Modality.APPLICATION_MODAL);

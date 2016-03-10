@@ -42,7 +42,7 @@ public class Main extends Application {
     //public static final String isUpdateAvailable = "https://raw.githubusercontent.com/popovanton0/POCT_new/gh-pages/isUpdateAvailaible.txt";
     private static Sender tlsSender = new Sender("popovanton0@gmail.com", "ilmtcbelwvtnlugv");
     double version = 2.0;
-    boolean debug = false;
+    boolean debug = true;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     GridPane grid = new GridPane();
     Button btn = new Button();
@@ -449,11 +449,11 @@ public class Main extends Application {
 
     public void openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
         for (int i = 0; i < nQu; i++) {
-            int n = i + 1;
-            Label questionLabel = new Label("Вопрос № " + n);
+            final int[] n = {i + 1};
+            Label questionLabel = new Label("Вопрос № " + n[0]);
             Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
-            questionButton.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
-            questionLabel.setTooltip(new Tooltip("Редактировать " + n + " вопрос"));
+            questionButton.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
+            questionLabel.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             pane.add(questionLabel, 0, i);
             pane.add(questionButton, 1, i);
             questionButton.setId(Integer.toString(i));
@@ -469,7 +469,7 @@ public class Main extends Application {
                 int nAn = editingQu.nAn;
                 String answers[] = editingQu.answers;
                 boolean[] checkBoxes = editingQu.checkBoxes;
-                int nQu1 = editingQu.i;
+                n[0] = editingQu.i;
                 String[] answerType = new String[1];
                 answerType[0] = editingQu.answerType;
                 if (debug) {
@@ -482,10 +482,10 @@ public class Main extends Application {
                         int j = h + 1;
                         System.out.println("    Правильность " + j + " ответа: " + checkBoxes[h]);
                     }
-                    System.out.println("    Код " + n + " вопроса: " + editingQu.getFormatedResult());
+                    System.out.println("    Код " + n[0] + " вопроса: " + editingQu.getFormatedResult());
                 }
                 question[Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
-                        nQu1,
+                        n[0],
                         debug,
                         this,
                         primaryStage,
@@ -509,8 +509,8 @@ public class Main extends Application {
     public Question startMakeMagic(int i, Window primaryStage) throws IOException {
         int n = i + 1;
         Question question;
-
-        question = HowManyAnswers.newWindow(i + 1, debug, this, primaryStage, nQu, false, "1", false, false, 1, new String[1], new boolean[1], new String[1]);
+        if (debug) System.out.println("startMakeMagic = " + n);
+        question = HowManyAnswers.newWindow(n, debug, this, primaryStage, nQu, false, "1", false, false, 1, new String[1], new boolean[1], new String[1]);
         if (debug) System.out.println("Вариантов ответа на " + n + " вопрос: " + question.nAn);
 
 

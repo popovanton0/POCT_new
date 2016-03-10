@@ -11,7 +11,7 @@ public class Question {
     Integer nAn;
     String[] answers;
     boolean[] checkBoxes;
-    Integer i;
+    int i;
     String answerType;
 
     public String getFormatedResult() {
@@ -86,7 +86,7 @@ public class Question {
                 else ansewrsFmt = ansewrsFmt + answer + ",";
             }
         }
-
+        System.out.println("i в форматировании вопроса в строку = " + i);
         String Result = "{\"DELETEDATE\":null," +
                 "\"NUMBER\":" + i + "," +
                 "\"COMMENT\":\"\"," +
