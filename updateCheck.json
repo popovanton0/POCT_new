@@ -1,1 +1,6 @@
-{"version":2.1, "msgToUpdate":"обновление !", "url":"https://github.com/popovanton0/POCT_new/blob/master/POCT_v2.0.exe?raw=true"}
+{
+    "version": 2.1,
+    "msgToUpdate": "Доступно обновление !",
+    "msgNoUpdate": "Обновлений нет",
+    "url": "https://github.com/popovanton0/POCT_new/blob/master/POCT_v2.0.exe?raw=true"
+}
