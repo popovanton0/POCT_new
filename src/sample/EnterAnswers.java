@@ -8,12 +8,14 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.util.logging.Logger;
+
 /**
  * Created by popov on 22.02.2016.
  */
 
 public class EnterAnswers {
-    public static AnswerObject newWindow(Integer nAn, Boolean debug, Main main) {
+    public static AnswerObject newWindow(Integer nAn, Boolean debug, Main main, Logger log) {
         String[] answers = new String[nAn];
         Stage window = new Stage();
         window.initModality(Modality.APPLICATION_MODAL);
@@ -50,32 +52,32 @@ public class EnterAnswers {
         Button btn1 = new Button("Открыть редактор");
         btn1.setTooltip(tooltip);
         btn1.setOnAction(event1 -> {
-            answerField1.setText(HowManyAnswers.openEditor(" ответа", 1, main, debug));
+            answerField1.setText(HowManyAnswers.openEditor(" ответа", 1, main, debug, log));
         });
         Button btn2 = new Button("Открыть редактор");
         btn2.setTooltip(tooltip);
         btn2.setOnAction(event1 -> {
-            answerField2.setText(HowManyAnswers.openEditor(" ответа", 2, main, debug));
+            answerField2.setText(HowManyAnswers.openEditor(" ответа", 2, main, debug, log));
         });
         Button btn3 = new Button("Открыть редактор");
         btn3.setTooltip(tooltip);
         btn3.setOnAction(event1 -> {
-            answerField3.setText(HowManyAnswers.openEditor(" ответа", 3, main, debug));
+            answerField3.setText(HowManyAnswers.openEditor(" ответа", 3, main, debug, log));
         });
         Button btn4 = new Button("Открыть редактор");
         btn4.setTooltip(tooltip);
         btn4.setOnAction(event1 -> {
-            answerField5.setText(HowManyAnswers.openEditor(" ответа", 4, main, debug));
+            answerField5.setText(HowManyAnswers.openEditor(" ответа", 4, main, debug, log));
         });
         Button btn5 = new Button("Открыть редактор");
         btn5.setTooltip(tooltip);
         btn5.setOnAction(event1 -> {
-            answerField5.setText(HowManyAnswers.openEditor(" ответа", 5, main, debug));
+            answerField5.setText(HowManyAnswers.openEditor(" ответа", 5, main, debug, log));
         });
         Button btn6 = new Button("Открыть редактор");
         btn6.setTooltip(tooltip);
         btn6.setOnAction(event1 -> {
-            answerField6.setText(HowManyAnswers.openEditor(" ответа", 6, main, debug));
+            answerField6.setText(HowManyAnswers.openEditor(" ответа", 6, main, debug, log));
         });
 
 
