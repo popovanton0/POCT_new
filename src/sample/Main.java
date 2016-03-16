@@ -41,7 +41,7 @@ public class Main extends Application {
 
 
     double version = 2.1;
-    boolean debug = false;
+    boolean debug = true;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     public static final Level LOG_LEVEL = Level.CONFIG;
     GridPane grid = new GridPane();
@@ -59,6 +59,8 @@ public class Main extends Application {
     Text scenetitle = new Text("Создание тестов для РОСТ \nВерсия " + Double.toString(version));
     static Logger log = Logger.getLogger(Main.class.getName());
     private static Sender tlsSender = new Sender("help_review@mail.ru", getVar("ctg 45"));
+    final Question[][] loadedAndEditedQuestions = new Question[1][1];
+    boolean isLoaded = false;
     public static void main(String[] args) {launch(args);}
 
     @Override
@@ -235,9 +237,26 @@ public class Main extends Application {
             final Question[][] questions = new Question[1][1];
 
             //Загружаем тест из файла
-            questions[0] = loadingTestFromFile(primaryStage);
+           // questions[0] = loadingTestFromFile(primaryStage);
+            Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
+            loadTestFromFileBtn.setTooltip(new Tooltip("Тестовая фича, находится в разработке"));
+            if (debug) grid.add(loadTestFromFileBtn, 1, 5);
+
+
+            loadTestFromFileBtn.setOnAction(event2 -> {
+                isLoaded = true;
+                log.info("Is loded Questions: ");
+                Question[] loadedQuestionsFromFile = loadQuestions(primaryStage);
+                loadedAndEditedQuestions[0] = new Question[loadedQuestionsFromFile.length];
+                questions[0] = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
+
+
+            });
 
             btn.setOnAction(event -> {
+                if (isLoaded){
+                    testNameTextField.setText("file" + Math.random());
+                }
                 log.info("Test name: " + testNameTextField.getText());
                 log.info("Typed questions number: " + nQuTextField.getText());
                 nQuStr = nQuTextField.getText();
@@ -311,10 +330,14 @@ public class Main extends Application {
 
 //СОЗДАНИЕ ФИНАЛЬНОГО STRING`А ИЗ МАССИВА СОХРАНЕНИЕ В ФАЙЛ
             saveTestToFile.setOnAction(event1 -> {
+                if (isLoaded){
+                    testNameTextField.setText("file" + Math.random());
+                }
                 String questionsFmt = "";
+                log.info(questions.toString());
                 for (int i = 0; i < questions[0].length; i++) {
                     if (i == (nQu - 1)) {
-                        questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log/*joji*/);
+                        questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log);
                     }
                     else {
                         questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log) + ",";
@@ -422,7 +445,7 @@ public class Main extends Application {
     }
 
     public Question[] loadingTestFromFile(Stage primaryStage) {
-        final Question[][] returnQuestion = new Question[1][1];
+        final Question[] returnQuestion = new Question[1];
         try {
             //ЗАГРУЗКА ТЕСТОВ
             Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
@@ -430,93 +453,93 @@ public class Main extends Application {
             if (debug) grid.add(loadTestFromFileBtn, 1, 5);
 
             loadTestFromFileBtn.setOnAction(event2 -> {
-                String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
-                JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
-                JsonArray themesArray = null;
-                JsonArray questionsArray = null;
-                try {
-                    themesArray = start.getAsJsonObject().getAsJsonArray("THEMES");
-                    questionsArray = (JsonArray) themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
-                } catch (Exception e) {
-                    log.warning(getStackTrace(e));
-                    showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
-                    primaryStage.close();
-                }
-
-                //МАССИВ ВОРОСОВ
-                Question[] questions;
-                questions = new Question[questionsArray.size()];
-                nQu = questions.length;
-                if (questions.length == 0) showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: массив questions = 0, Main.java:196", false, new GridPane());
-                //ПОЛУЧАЕМ МАССИВ ВОПРОСОВ ИЗ JSON
-
-                try {
-                    for (int j = 0; j < questionsArray.size(); j++) {
-                        questions[j] = new Question();
-                        JsonObject object = (JsonObject) questionsArray.get(j);
-
-
-                        questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
-                        questions[j].answerType = object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString();
-                        questions[j].isRegistrSense = false;
-                        questions[j].isSpaceSense = false;
-                        questions[j].i = j + 1;
-
-                        if (object.getAsJsonObject().getAsJsonPrimitive("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
-                            questions[j].isRegistrSense = true;
-
-                        if (object.getAsJsonObject().getAsJsonPrimitive("ISSPACESENSITIVENESS").getAsString().equals("true"))
-                            questions[j].isSpaceSense = true;
-
-                        //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
-                        JsonArray jsonAnswers = object.getAsJsonArray("ANSWERS");
-                        questions[j].nAn = jsonAnswers.size();
-                        String[] answers = new String[12];
-                        boolean[] checkBoxes = new boolean[6];
-                        for (int k = 0; k < jsonAnswers.size(); k++) {
-                            answers[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
-                            log.info("Loaded answerText:" + answers[k]);
-                            if (jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString().equals("\"True\""))
-                                checkBoxes[k] = true;
-                            else checkBoxes[k] = false;
-                            log.info("Loaded answerValue:" + jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString());
-                        }
-                        questions[j].answers = answers;
-                        questions[j].checkBoxes = checkBoxes;
-
-                    }
-                } catch (Exception e) {
-                    log.warning(getStackTrace(e));
-                    showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
-                    primaryStage.close();
-                }
-
-
-                grid.getChildren().clear();
-                GridPane pane = new GridPane();
-                pane.setGridLinesVisible(debug);
-                pane.setAlignment(Pos.CENTER);
-                pane.setVgap(10);
-                pane.setHgap(10);
-                pane.setPadding(new Insets(15, 15, 15, 15));
-
-
-
-                //СОЗДАНИЕ РЕДАКТОРА
-                returnQuestion[0] = openQuestionsEditor(questions.length, questions, primaryStage, pane);
-                log.severe(returnQuestion[0][0].qText);
-                log.info("IUTUYY " + returnQuestion[0][0].qText);
-
-                try {
-                    pane.add(saveTestToFile, 2, questionsArray.size());
-                    grid.add(pane, 0, 0);
-                } catch (Exception e) {log.warning(getStackTrace(e));}
+                Question[] loadedQuestionsFromFile = loadQuestions(primaryStage);
+                //loadedAndEditedQuestions = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
             });
 
         } catch (Exception e) {
             log.warning(getStackTrace(e));
         }
-        return returnQuestion[0];
+        return returnQuestion;
+    }
+
+    private Question[] loadQuestions(Stage primaryStage) {
+        String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
+        JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
+        JsonArray themesArray = null;
+        JsonArray questionsArray = null;
+        try {
+            themesArray = start.getAsJsonObject().getAsJsonArray("THEMES");
+            questionsArray = (JsonArray) themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
+        } catch (Exception e) {
+            log.warning(getStackTrace(e));
+            showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+            primaryStage.close();
+        }
+
+        //МАССИВ ВОРОСОВ
+        Question[] questions;
+        questions = new Question[questionsArray.size()];
+        nQu = questions.length;
+        if (questions.length == 0) showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: массив questions = 0, Main.java:196", false, new GridPane());
+        //ПОЛУЧАЕМ МАССИВ ВОПРОСОВ ИЗ JSON
+
+        try {
+            for (int j = 0; j < questionsArray.size(); j++) {
+                questions[j] = new Question();
+                JsonObject object = (JsonObject) questionsArray.get(j);
+
+
+                questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+                questions[j].answerType = object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString();
+                questions[j].isRegistrSense = false;
+                questions[j].isSpaceSense = false;
+                questions[j].i = j + 1;
+
+                if (object.getAsJsonObject().getAsJsonPrimitive("ISREGISTRSENSITIVENESS").getAsString().equals("true"))
+                    questions[j].isRegistrSense = true;
+
+                if (object.getAsJsonObject().getAsJsonPrimitive("ISSPACESENSITIVENESS").getAsString().equals("true"))
+                    questions[j].isSpaceSense = true;
+
+                //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
+                JsonArray jsonAnswers = object.getAsJsonArray("ANSWERS");
+                questions[j].nAn = jsonAnswers.size();
+                String[] answers = new String[12];
+                boolean[] checkBoxes = new boolean[6];
+                for (int k = 0; k < jsonAnswers.size(); k++) {
+                    answers[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+                    log.info("Loaded answerText:" + answers[k]);
+                    if (jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString().equals("\"True\""))
+                        checkBoxes[k] = true;
+                    else checkBoxes[k] = false;
+                    log.info("Loaded answerValue:" + jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString());
+                }
+                questions[j].answers = answers;
+                questions[j].checkBoxes = checkBoxes;
+
+            }
+        } catch (Exception e) {
+            log.warning(getStackTrace(e));
+            showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+            primaryStage.close();
+        }
+
+
+        grid.getChildren().clear();
+        GridPane pane = new GridPane();
+        pane.setGridLinesVisible(debug);
+        pane.setAlignment(Pos.CENTER);
+        pane.setVgap(10);
+        pane.setHgap(10);
+        pane.setPadding(new Insets(15, 15, 15, 15));
+
+
+        try {
+            pane.add(saveTestToFile, 2, questionsArray.size());
+            grid.add(pane, 0, 0);
+        } catch (Exception e) {log.warning(getStackTrace(e));}
+        return questions;
     }
 
     public void settingUpLogging(int logsLimit) {
@@ -578,7 +601,7 @@ public class Main extends Application {
                     isUpdate.setFill(javafx.scene.paint.Paint.valueOf("green"));
                 } else {
                     String withOutQuotes = json.get("msgNoUpdate").toString().replace("\"", "");
-                    log.info("Нет обновлений, msgNoUpdate: " + withOutQuotes);
+                    log.info("No updates found, msgNoUpdate: " + withOutQuotes);
                     isUpdate.setText(withOutQuotes);
                 }
             }else {

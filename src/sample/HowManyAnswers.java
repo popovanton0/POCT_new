@@ -105,8 +105,8 @@ public class HowManyAnswers {
             webEditor.setMaxHeight(430);
             WebEngine webEditorEngine = webEditor.getEngine();
             webEditorEngine.setJavaScriptEnabled(true);
-            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
-            else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
+//            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
+  //          else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
             grid.add(webEditor, 0, 0);
 
             boolean[] isSence = new boolean[2];
@@ -230,7 +230,7 @@ public class HowManyAnswers {
                     answers[0] = directInputTextField.getText();
                     checkBoxes[0] = true;
                 }
-               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString().replace("\n", "");
+//               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString().replace("\n", "");
                finalQuestion.isRegistrSense = isSence[0];
                finalQuestion.isSpaceSense = isSence[1];
                finalQuestion.nAn = nAn;
