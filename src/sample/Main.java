@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -21,6 +22,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -30,10 +32,15 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Main extends Application {
@@ -54,12 +61,12 @@ public class Main extends Application {
     finalTest test = new finalTest();
     Button saveTestToFile = new Button("Сохранить тест в файл");
     String endEndResult;
+    String loadedTestName = "";
     String debugText = "";
     String logsLimit = "50";
     Text scenetitle = new Text("Создание тестов для РОСТ \nВерсия " + Double.toString(version));
     static Logger log = Logger.getLogger(Main.class.getName());
     private static Sender tlsSender = new Sender("help_review@mail.ru", getVar("ctg 45"));
-    final Question[][] loadedAndEditedQuestions = new Question[1][1];
     boolean isLoaded = false;
     public static void main(String[] args) {launch(args);}
 
@@ -237,7 +244,6 @@ public class Main extends Application {
             final Question[][] questions = new Question[1][1];
 
             //Загружаем тест из файла
-           // questions[0] = loadingTestFromFile(primaryStage);
             Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
             loadTestFromFileBtn.setTooltip(new Tooltip("Тестовая фича, находится в разработке"));
             if (debug) grid.add(loadTestFromFileBtn, 1, 5);
@@ -245,18 +251,13 @@ public class Main extends Application {
 
             loadTestFromFileBtn.setOnAction(event2 -> {
                 isLoaded = true;
-                log.info("Is loded Questions: ");
+                log.info("Is loaded Questions: " + isLoaded);
                 Question[] loadedQuestionsFromFile = loadQuestions(primaryStage);
-                loadedAndEditedQuestions[0] = new Question[loadedQuestionsFromFile.length];
                 questions[0] = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
-
 
             });
 
             btn.setOnAction(event -> {
-                if (isLoaded){
-                    testNameTextField.setText("file" + Math.random());
-                }
                 log.info("Test name: " + testNameTextField.getText());
                 log.info("Typed questions number: " + nQuTextField.getText());
                 nQuStr = nQuTextField.getText();
@@ -330,9 +331,7 @@ public class Main extends Application {
 
 //СОЗДАНИЕ ФИНАЛЬНОГО STRING`А ИЗ МАССИВА СОХРАНЕНИЕ В ФАЙЛ
             saveTestToFile.setOnAction(event1 -> {
-                if (isLoaded){
-                    testNameTextField.setText("file" + Math.random());
-                }
+
                 String questionsFmt = "";
                 log.info(questions.toString());
                 for (int i = 0; i < questions[0].length; i++) {
@@ -345,16 +344,20 @@ public class Main extends Application {
 
                 }
 
+
                 finalTest test = new finalTest();
                 test.testName = testNameTextField.getText();
                 test.questionsFmt = questionsFmt;
                 test.subjectId = subjectId;
+                log.info("isLoaded on save: " + isLoaded + "\n loadedTestName: " + loadedTestName);
+                if (isLoaded) test.testName = loadedTestName;
                 endEndResult = test.getFormatedTest();
+
                 log.info("На saveTestToFile" + endEndResult);
                 BufferedWriter bw = null;
                 try {
                     bw = new BufferedWriter(new OutputStreamWriter(
-                            new FileOutputStream("C:\\ROST_tests\\" + testNameTextField.getText() + ".rost"), "UTF-8"));
+                            new FileOutputStream("C:\\ROST_tests\\" + test.testName + ".rost"), "UTF-8"));
                     primaryStage.setTitle(appName);
                 } catch (UnsupportedEncodingException e) {
                     primaryStage.setTitle(appName + " Ошибка: неподдерживаемая кодировка");
@@ -368,8 +371,8 @@ public class Main extends Application {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Успех !");
                     alert.setHeaderText("Тест создан !");
-                    alert.setContentText("Тест \"" + testNameTextField.getText() + "\" успешно создан и сохранён в C:\\ROST_tests\\"
-                            + testNameTextField.getText() + ".rost");
+                    alert.setContentText("Тест \"" + test.testName + "\" успешно создан и сохранён в C:\\ROST_tests\\"
+                            + test.testName + ".rost");
                     Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
                     stage.getIcons().add(new Image(this.getClass().getResource("successIcon.png").toString()));
 
@@ -443,31 +446,36 @@ public class Main extends Application {
             log.warning(getStackTrace(e));
         }
     }
-
-    public Question[] loadingTestFromFile(Stage primaryStage) {
-        final Question[] returnQuestion = new Question[1];
-        try {
-            //ЗАГРУЗКА ТЕСТОВ
-            Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
-            loadTestFromFileBtn.setTooltip(new Tooltip("Тестовая фича, находится в разработке"));
-            if (debug) grid.add(loadTestFromFileBtn, 1, 5);
-
-            loadTestFromFileBtn.setOnAction(event2 -> {
-                Question[] loadedQuestionsFromFile = loadQuestions(primaryStage);
-                //loadedAndEditedQuestions = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
-            });
-
-        } catch (Exception e) {
-            log.warning(getStackTrace(e));
-        }
-        return returnQuestion;
+    static String readFile(String path)
+            throws IOException
+    {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded);
     }
 
+
     private Question[] loadQuestions(Stage primaryStage) {
-        String loadedQu = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
-        JsonElement start = new Gson().fromJson(loadedQu, JsonElement.class);
+        String loadedQu = null;// = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
+
+        File file = new FileChooser().showOpenDialog(primaryStage);
+        if (file != null) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
+                loadedQu = readFile(file.getPath());
+            } catch (FileNotFoundException e) {
+                log.warning(getStackTrace(e));
+            } catch (IOException e) {
+                log.warning(getStackTrace(e));
+            }
+        }
+
+        JsonReader reader = new JsonReader(new StringReader(loadedQu));
+        reader.setLenient(true);
+        JsonElement start = new Gson().fromJson(reader, JsonElement.class);
         JsonArray themesArray = null;
         JsonArray questionsArray = null;
+        loadedTestName = start.getAsJsonObject().getAsJsonPrimitive("NAME").getAsString();
+        log.info(loadedTestName);
         try {
             themesArray = start.getAsJsonObject().getAsJsonArray("THEMES");
             questionsArray = (JsonArray) themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
@@ -682,12 +690,15 @@ public class Main extends Application {
     public Question[] openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
         for (int i = 0; i < nQu; i++) {
             final int[] n = {i + 1};
+            pane.getChildren().clear();
             Label questionLabel = new Label("Вопрос № " + n[0]);
             Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
             questionButton.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             questionLabel.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             pane.add(questionLabel, 0, i);
             pane.add(questionButton, 1, i);
+            pane.add(saveTestToFile, 2, nQu);
+            pane.setGridLinesVisible(debug);
             questionButton.setId(Integer.toString(i));
 
             questionButton.setOnAction(event1 -> {
@@ -705,7 +716,7 @@ public class Main extends Application {
                 n[0] = editingQu.i;
                 String[] answerType = new String[1];
                 answerType[0] = editingQu.answerType;
-                /*OUT*/
+
                     log.info("[ПРИ РЕДАКТИРОВАНИИ " + editingQu.i + " ВОПРОСА]\nТекст " + editingQu.i + " вопроса: " + editingQu.qText);
                     for (int h = 0; h < answers.length; h++) {
                         int j = h + 1;

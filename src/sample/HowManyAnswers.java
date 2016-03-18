@@ -105,8 +105,8 @@ public class HowManyAnswers {
             webEditor.setMaxHeight(430);
             WebEngine webEditorEngine = webEditor.getEngine();
             webEditorEngine.setJavaScriptEnabled(true);
-//            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
-  //          else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
+            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
+           else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
             grid.add(webEditor, 0, 0);
 
             boolean[] isSence = new boolean[2];
@@ -188,7 +188,7 @@ public class HowManyAnswers {
                 boolean[] checkBoxes = new boolean[6];
                 boolean isError = false;
                 //ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА
-                if (answerType[0] == "One" || answerType[0] == "Sort" || answerType[0] == "Compiles") {
+                if (answerType[0].equals("One") || answerType[0].equals("Sort") || answerType[0].equals("Compiles")) {
                     try {
                         answers[0] = answerField1.getText();
                         answers[1] = answerField2.getText();
@@ -214,7 +214,7 @@ public class HowManyAnswers {
                         log.warning(Main.getStackTrace(e));
                     }
 
-                    if (answerType[0] == "Compiles") {
+                    if (answerType[0].equals("Compiles")) {
                         answers[6] = answerField1Compilles.getText();
                         answers[7] = answerField2Compilles.getText();
                         if (nAn >= 3) answers[8] = answerField3Compilles.getText();
@@ -230,7 +230,7 @@ public class HowManyAnswers {
                     answers[0] = directInputTextField.getText();
                     checkBoxes[0] = true;
                 }
-//               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString().replace("\n", "");
+               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString().replace("\n", "");
                finalQuestion.isRegistrSense = isSence[0];
                finalQuestion.isSpaceSense = isSence[1];
                finalQuestion.nAn = nAn;
