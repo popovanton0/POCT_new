@@ -1,5 +1,6 @@
 package sample;
 
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -489,7 +490,19 @@ public class HowManyAnswers {
     }
 
     public static void setAnswerTextFields(boolean isEditor, TextField directInputTextField, String[] answersLoaded, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, TextField answerField1Compilles, TextField answerField2Compilles, TextField answerField3Compilles, TextField answerField4Compilles, TextField answerField5Compilles, TextField answerField6Compilles, Logger log) {
-        //setPromtText для полей ввода
+
+        if (isEditor) {
+            for (int i = 0; i < answersLoaded.length; i++) {
+                try {
+                    answersLoaded[i] = HTMLEntities.unhtmlentities(answersLoaded[i]);
+                    log.info("Formatted Answers: " + answersLoaded[i]);
+                } catch (Exception e) {
+                    log.warning(Main.getStackTrace(e));
+                }
+            }
+        }
+
+
         try {
             answerField1.setPromptText("Текст 1 ответа");
             answerField2.setPromptText("Текст 2 ответа");

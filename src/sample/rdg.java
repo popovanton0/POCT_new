@@ -7,7 +7,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 
-
+//Не относится к проекту
 public class rdg {
 
     public static void main(String[] args) {

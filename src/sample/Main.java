@@ -298,7 +298,7 @@ public class Main extends Application {
 
 
 
-                    pane.add(saveTestToFile, 2, nQu);
+                    //pane.add(saveTestToFile, 2, nQu);
                     primaryStage.setScene(new Scene(new ScrollPane(pane)));
                     primaryStage.setMinHeight(120);
                     primaryStage.setMinWidth(410);

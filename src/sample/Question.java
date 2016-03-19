@@ -1,5 +1,7 @@
 package sample;
 
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
+
 import java.util.logging.Logger;
 
 /**
@@ -18,6 +20,16 @@ public class Question {
 
 
     public String getFormatedResult(Logger log) {
+
+
+        for (int j = 0; j < answers.length; j++) {
+            try {
+                answers[j] = HTMLEntities.htmlentities(answers[j]);
+            } catch (Exception e) {
+                log.warning(e.getLocalizedMessage());
+            }
+        }
+
         System.out.println("На getFormatedResult: " + answerType);
         String Result = null;
         try {
