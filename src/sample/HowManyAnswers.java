@@ -84,12 +84,12 @@ public class HowManyAnswers {
             CheckBox isSpaceSenseCheckBox = new CheckBox();
 
             //ДОБАВЛЯЕМ КНОПКИ ОТКРЫТИЯ РЕДАКТОРА ОТВЕТОВ
-            Button btn1 = new Button("Открыть редактор");
-            Button btn2 = new Button("Открыть редактор");
-            Button btn3 = new Button("Открыть редактор");
-            Button btn4 = new Button("Открыть редактор");
-            Button btn5 = new Button("Открыть редактор");
-            Button btn6 = new Button("Открыть редактор");
+            /*Button  = new Button("Открыть редактор");
+            Button  = new Button("Открыть редактор");
+            Button  = new Button("Открыть редактор");
+            Button  = new Button("Открыть редактор");
+            Button  = new Button("Открыть редактор");
+            Button  = new Button("Открыть редактор");*/
 
             //ГЛАВНАЯ СЕТКА
             GridPane grid = new GridPane();
@@ -106,8 +106,8 @@ public class HowManyAnswers {
             webEditor.setMaxHeight(430);
             WebEngine webEditorEngine = webEditor.getEngine();
             webEditorEngine.setJavaScriptEnabled(true);
-            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
-           else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
+// РАСКОММЕНТИТЬ !!!            if (isEditor) webEditorEngine.load(main.getClass().getResource("ckeditor/editorForEditingQu.htm").toString());
+// РАСКОММЕНТИТЬ !!!           else webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
             grid.add(webEditor, 0, 0);
 
             boolean[] isSence = new boolean[2];
@@ -167,16 +167,11 @@ public class HowManyAnswers {
             //УСТАНАВЛИВАЕМ TOOLPIPE`Ы, ЗАПРЕЩАЕМ НАВОДИТЬ ФОКУС
             setUpRightAnswerChooses(isEditor, checkBoxesLoaded, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, log);
 
-            //УСТАНАВЛИВАЕМ TOOLPIPE`Ы, ЗАПРЕЩАЕМ НАВОДИТЬ ФОКУС, УСТАНАВЛИВАЕМ LISTENER`ОВ НА ОТКРЫТИЕ РЕДАКТОРА
-            setUpOpenEditorBtns(log, debug, main, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, btn1, btn2, btn3, btn4, btn5, btn6);
 
-
-            int isSpaseForCompilesTextField = 2;
-            if (answerType[0] == "Compiles") isSpaseForCompilesTextField = 3;
-            final int finalIsSpaseForCompilesTextField = isSpaseForCompilesTextField;
+            final int finalIsSpaceForCompilesTextField = 2;
 
             //УСТАНАВЛИВАЕМ LISTENER`Ы ДЛЯ
-            setListenersToAddTextFields(log, nAnLoaded, isEditor, answerType, HowManyAnswersRadioButton2, HowManyAnswersRadioButton3, HowManyAnswersRadioButton4, HowManyAnswersRadioButton5, HowManyAnswersRadioButton6, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField);
+            setListenersToAddTextFields(log, nAnLoaded, isEditor, answerType, HowManyAnswersRadioButton2, HowManyAnswersRadioButton3, HowManyAnswersRadioButton4, HowManyAnswersRadioButton5, HowManyAnswersRadioButton6, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaceForCompilesTextField);
 
 
             question = new Question();
@@ -191,12 +186,12 @@ public class HowManyAnswers {
                 //ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА
                 if (answerType[0].equals("One") || answerType[0].equals("Sort") || answerType[0].equals("Compiles")) {
                     try {
-                        answers[0] = answerField1.getText();
-                        answers[1] = answerField2.getText();
-                        if (nAn >= 3) answers[2] = answerField3.getText();
-                        if (nAn >= 4) answers[3] = answerField4.getText();
-                        if (nAn >= 5) answers[4] = answerField5.getText();
-                        if (nAn == 6) answers[5] = answerField6.getText();
+                        answers[0] = HTMLEntities.htmlentities(answerField1.getText());
+                        answers[1] = HTMLEntities.htmlentities(answerField2.getText());
+                        if (nAn >= 3) answers[2] = HTMLEntities.htmlentities(answerField3.getText());
+                        if (nAn >= 4) answers[3] = HTMLEntities.htmlentities(answerField4.getText());
+                        if (nAn >= 5) answers[4] = HTMLEntities.htmlentities(answerField5.getText());
+                        if (nAn == 6) answers[5] = HTMLEntities.htmlentities(answerField6.getText());
                     } catch (Exception e) {
                         isError = true;
                         log.warning(Main.getStackTrace(e));
@@ -216,22 +211,22 @@ public class HowManyAnswers {
                     }
 
                     if (answerType[0].equals("Compiles")) {
-                        answers[6] = answerField1Compilles.getText();
-                        answers[7] = answerField2Compilles.getText();
-                        if (nAn >= 3) answers[8] = answerField3Compilles.getText();
-                        if (nAn >= 4) answers[9] = answerField4Compilles.getText();
-                        if (nAn >= 5) answers[10] = answerField5Compilles.getText();
-                        if (nAn == 6) answers[11] = answerField6Compilles.getText();
+                        answers[6] = HTMLEntities.htmlentities(answerField1Compilles.getText());
+                        answers[7] = HTMLEntities.htmlentities(answerField2Compilles.getText());
+                        if (nAn >= 3) answers[8] = HTMLEntities.htmlentities(answerField3Compilles.getText());
+                        if (nAn >= 4) answers[9] = HTMLEntities.htmlentities(answerField4Compilles.getText());
+                        if (nAn >= 5) answers[10] = HTMLEntities.htmlentities(answerField5Compilles.getText());
+                        if (nAn == 6) answers[11] = HTMLEntities.htmlentities(answerField6Compilles.getText());
                     }
 
                     if (isError)
                         main.showAlert(Alert.AlertType.ERROR, "Ошибка", "Вы не выбрали правильный вариант ответа !", false, new GridPane());
                     //ЕСЛИ ПРЯМОЙ ВВОД
-                } else if (answerType[0] == "DirectInput") {
-                    answers[0] = directInputTextField.getText();
+                } else if (answerType[0].equals("DirectInput")) {
+                    answers[0] = HTMLEntities.unhtmlentities(directInputTextField.getText());
                     checkBoxes[0] = true;
                 }
-               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString().replace("\n", "");
+// РАСКОММЕНТИТЬ !!!               finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString();
                finalQuestion.isRegistrSense = isSence[0];
                finalQuestion.isSpaceSense = isSence[1];
                finalQuestion.nAn = nAn;
@@ -266,34 +261,34 @@ public class HowManyAnswers {
         return question;
     }
 
-    public static void setListenersToAddTextFields(Logger log, int nAnLoaded, boolean isEditor, String[] answerType, RadioButton howManyAnswersRadioButton2, RadioButton howManyAnswersRadioButton3, RadioButton howManyAnswersRadioButton4, RadioButton howManyAnswersRadioButton5, RadioButton howManyAnswersRadioButton6, Label answer1, Label answer2, Label answer3, Label answer4, Label answer5, Label answer6, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, TextField answerField1Compilles, TextField answerField2Compilles, TextField answerField3Compilles, TextField answerField4Compilles, TextField answerField5Compilles, TextField answerField6Compilles, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, Button btn1, Button btn2, Button btn3, Button btn4, Button btn5, Button btn6, GridPane gridForTextingAnswers, int finalIsSpaseForCompilesTextField) {
+    public static void setListenersToAddTextFields(Logger log, int nAnLoaded, boolean isEditor, String[] answerType, RadioButton howManyAnswersRadioButton2, RadioButton howManyAnswersRadioButton3, RadioButton howManyAnswersRadioButton4, RadioButton howManyAnswersRadioButton5, RadioButton howManyAnswersRadioButton6, Label answer1, Label answer2, Label answer3, Label answer4, Label answer5, Label answer6, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, TextField answerField1Compilles, TextField answerField2Compilles, TextField answerField3Compilles, TextField answerField4Compilles, TextField answerField5Compilles, TextField answerField6Compilles, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, GridPane gridForTextingAnswers, int finalIsSpaseForCompilesTextField) {
         try {
-            if (isEditor) addToTextingAnswers(nAnLoaded, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+            if (isEditor) addToTextingAnswers(nAnLoaded, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
 
             howManyAnswersRadioButton2.setOnMouseClicked(event1 -> {
-                addToTextingAnswers(2, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+                addToTextingAnswers(2, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
             });
             howManyAnswersRadioButton3.setOnMouseClicked(event1 -> {
-                addToTextingAnswers(3, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+                addToTextingAnswers(3, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
             });
 
             howManyAnswersRadioButton4.setOnMouseClicked(event1 -> {
-                addToTextingAnswers(4, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+                addToTextingAnswers(4, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
             });
 
             howManyAnswersRadioButton5.setOnMouseClicked(event1 -> {
-                addToTextingAnswers(5, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+                addToTextingAnswers(5, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
             });
 
             howManyAnswersRadioButton6.setOnMouseClicked(event1 -> {
-                addToTextingAnswers(6, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, btn1, btn2, btn3, btn4, btn5, btn6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
+                addToTextingAnswers(6, answerType, answer1, answer2, answer3, answer4, answer5, answer6, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, gridForTextingAnswers, finalIsSpaseForCompilesTextField, log);
             });
         } catch (Exception e) {
             log.warning(Main.getStackTrace(e));
         }
     }
 
-    public static void addToTextingAnswers(int timesToAdd, String[] answerType, Label answer1, Label answer2, Label answer3, Label answer4, Label answer5, Label answer6, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, TextField answerField1Compilles, TextField answerField2Compilles, TextField answerField3Compilles, TextField answerField4Compilles, TextField answerField5Compilles, TextField answerField6Compilles, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, Button btn1, Button btn2, Button btn3, Button btn4, Button btn5, Button btn6, GridPane gridForTextingAnswers, int finalIsSpaseForCompilesTextField, Logger log) {
+    public static void addToTextingAnswers(int timesToAdd, String[] answerType, Label answer1, Label answer2, Label answer3, Label answer4, Label answer5, Label answer6, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, TextField answerField1Compilles, TextField answerField2Compilles, TextField answerField3Compilles, TextField answerField4Compilles, TextField answerField5Compilles, TextField answerField6Compilles, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, GridPane gridForTextingAnswers, int finalIsSpaseForCompilesTextField, Logger log) {
         //ПОЛУЧАЕМ ВВЕДЁННЫЙ ТЕКСТ С ПОЛЕЙ
         try {
             String savedText1 = null;
@@ -340,41 +335,35 @@ public class HowManyAnswers {
                 gridForTextingAnswers.add(answerField1, 1, 0);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-                gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
 
                 gridForTextingAnswers.add(answer2, 0, 1);
                 gridForTextingAnswers.add(answerField2, 1, 1);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-                gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
             }
             if (timesToAdd >= 3) {
                 gridForTextingAnswers.add(answer3, 0, 2);
                 gridForTextingAnswers.add(answerField3, 1, 2);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose3, finalIsSpaseForCompilesTextField, 2);
-                gridForTextingAnswers.add(btn3, finalIsSpaseForCompilesTextField + 1, 2);
             }
             if (timesToAdd >= 4) {
                 gridForTextingAnswers.add(answer4, 0, 3);
                 gridForTextingAnswers.add(answerField4, 1, 3);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose4, finalIsSpaseForCompilesTextField, 3);
-                gridForTextingAnswers.add(btn4, finalIsSpaseForCompilesTextField + 1, 3);
             }
             if (timesToAdd >= 5) {
                 gridForTextingAnswers.add(answer5, 0, 4);
                 gridForTextingAnswers.add(answerField5, 1, 4);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose5, finalIsSpaseForCompilesTextField, 4);
-                gridForTextingAnswers.add(btn5, finalIsSpaseForCompilesTextField + 1, 4);
             }
             if (timesToAdd == 6) {
                 gridForTextingAnswers.add(answer6, 0, 5);
                 gridForTextingAnswers.add(answerField6, 1, 5);
                 if (!Objects.equals(answerType[0], "Compiles"))
                     gridForTextingAnswers.add(answerChoose6, finalIsSpaseForCompilesTextField, 5);
-                gridForTextingAnswers.add(btn6, finalIsSpaseForCompilesTextField + 1, 5);
             }
             //ДОБВАЛЯЕМ ПОЛЯ ДЛЯ COMPILES
             if (answerType[0].equals("Compiles")){
@@ -494,7 +483,10 @@ public class HowManyAnswers {
         if (isEditor) {
             for (int i = 0; i < answersLoaded.length; i++) {
                 try {
-                    answersLoaded[i] = HTMLEntities.unhtmlentities(answersLoaded[i]);
+                    answersLoaded[i] = HTMLEntities.unhtmlentities(answersLoaded[i]).replace("<p>", "").replace("</p>", "").replace("\\n", "");
+                    answersLoaded[i] = HTMLEntities.unhtmlDoubleQuotes(answersLoaded[i]);
+                    answersLoaded[i] = HTMLEntities.unhtmlSingleQuotes(answersLoaded[i]);
+
                     log.info("Formatted Answers: " + answersLoaded[i]);
                 } catch (Exception e) {
                     log.warning(Main.getStackTrace(e));
@@ -567,49 +559,49 @@ public class HowManyAnswers {
 
     }
 
-    public static void setUpOpenEditorBtns(Logger log, boolean debug, Main main, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, Button btn1, Button btn2, Button btn3, Button btn4, Button btn5, Button btn6) {
+    /*public static void setUpOpenEditorBtns(Logger log, boolean debug, Main main, TextField answerField1, TextField answerField2, TextField answerField3, TextField answerField4, TextField answerField5, TextField answerField6, Button , Button , Button , Button , Button , Button ) {
         try {
             Tooltip tooltip = new Tooltip("Вы можете написать ответы на вопрос с помощью редактора");
 
-            btn1.setTooltip(tooltip);
-            btn1.setFocusTraversable(false);
-            btn1.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField1.setText(openEditor(" ответа", 1, main, debug, log));
             });
 
-            btn2.setTooltip(tooltip);
-            btn2.setFocusTraversable(false);
-            btn2.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField2.setText(openEditor(" ответа", 2, main, debug, log));
             });
 
-            btn3.setTooltip(tooltip);
-            btn3.setFocusTraversable(false);
-            btn3.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField3.setText(openEditor(" ответа", 3, main, debug, log));
             });
 
-            btn4.setTooltip(tooltip);
-            btn4.setFocusTraversable(false);
-            btn4.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField4.setText(openEditor(" ответа", 4, main, debug, log));
             });
 
-            btn5.setTooltip(tooltip);
-            btn5.setFocusTraversable(false);
-            btn5.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField5.setText(openEditor(" ответа", 5, main, debug, log));
             });
 
-            btn6.setTooltip(tooltip);
-            btn6.setFocusTraversable(false);
-            btn6.setOnAction(event1 -> {
+            .setTooltip(tooltip);
+            .setFocusTraversable(false);
+            .setOnAction(event1 -> {
                 answerField6.setText(openEditor(" ответа", 6, main, debug, log));
             });
         } catch (Exception e) {
             log.warning(Main.getStackTrace(e));
         }
-    }
+    }*/
 
     public static void setAnswerTypeChoosers(Logger log, boolean isEditor, String[] answerType, GridPane grid, RadioButton answerTypeUsual, RadioButton answerTypeDirectInput, RadioButton answerTypeComplies, RadioButton answerTypeSort, Label howManyAnswers, GridPane gridForRadioButtonAnswers, ScrollPane scrollPane, TextField directInputTextField) {
         try {
@@ -726,7 +718,7 @@ public class HowManyAnswers {
             WebView webEditor = new WebView();
             WebEngine webEditorEngine = webEditor.getEngine();
             webEditorEngine.setJavaScriptEnabled(true);
-            webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
+// РАСКОММЕНТИТЬ !!!            webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
             alert.getDialogPane().setContent(webEditor);
         /*HTMLEditor editor = new HTMLEditor();
 
@@ -1010,40 +1002,40 @@ public class HowManyAnswers {
 
         //ДОБАВЛЯЕМ КНОПКИ ОТКРЫТИЯ РЕДАКТОРА ОТВЕТОВ
         Tooltip tooltip = new Tooltip("Вы можете написать ответы на вопрос с помощью редактора");
-        Button btn1 = new Button("Открыть редактор");
-        btn1.setTooltip(tooltip);
-        btn1.setFocusTraversable(false);
-        btn1.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField1.setText(openEditor(" ответа", 1, main, debug));
         });
-        Button btn2 = new Button("Открыть редактор");
-        btn2.setTooltip(tooltip);
-        btn2.setFocusTraversable(false);
-        btn2.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField2.setText(openEditor(" ответа", 2, main, debug));
         });
-        Button btn3 = new Button("Открыть редактор");
-        btn3.setTooltip(tooltip);
-        btn3.setFocusTraversable(false);
-        btn3.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField3.setText(openEditor(" ответа", 3, main, debug));
         });
-        Button btn4 = new Button("Открыть редактор");
-        btn4.setTooltip(tooltip);
-        btn4.setFocusTraversable(false);
-        btn4.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField4.setText(openEditor(" ответа", 4, main, debug));
         });
-        Button btn5 = new Button("Открыть редактор");
-        btn5.setTooltip(tooltip);
-        btn5.setFocusTraversable(false);
-        btn5.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField5.setText(openEditor(" ответа", 5, main, debug));
         });
-        Button btn6 = new Button("Открыть редактор");
-        btn6.setTooltip(tooltip);
-        btn6.setFocusTraversable(false);
-        btn6.setOnAction(event1 -> {
+        Button  = new Button("Открыть редактор");
+        .setTooltip(tooltip);
+        .setFocusTraversable(false);
+        .setOnAction(event1 -> {
             answerField6.setText(openEditor(" ответа", 6, main, debug));
         });
 
@@ -1058,37 +1050,37 @@ public class HowManyAnswers {
                 gridForTextingAnswers.add(answer1, 0, 0);
                 gridForTextingAnswers.add(answerField1, 1, 0);
                 if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, 2, 0);
-                gridForTextingAnswers.add(btn1, 3, 0);
+                gridForTextingAnswers.add(, 3, 0);
 
 
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, 2, 1);
-            gridForTextingAnswers.add(btn2, 3, 1);
+            gridForTextingAnswers.add(, 3, 1);
 
             if (nAn1 >= 3) {
                 gridForTextingAnswers.add(answer3, 0, 2);
                 gridForTextingAnswers.add(answerField3, 1, 2);
                 if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose3, 2, 2);
-                gridForTextingAnswers.add(btn3, 3, 2);
+                gridForTextingAnswers.add(, 3, 2);
             }
             if (nAn1 >= 4) {
                 gridForTextingAnswers.add(answer4, 0, 3);
                 gridForTextingAnswers.add(answerField4, 1, 3);
                 if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose4, 2, 3);
-                gridForTextingAnswers.add(btn4, 3, 3);
+                gridForTextingAnswers.add(, 3, 3);
             }
             if (nAn1 >= 5) {
                 gridForTextingAnswers.add(answer5, 0, 4);
                 gridForTextingAnswers.add(answerField5, 1, 4);
                 if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose5, 2, 4);
-                gridForTextingAnswers.add(btn5, 3, 4);
+                gridForTextingAnswers.add(, 3, 4);
             }
             if (nAn1 >= 6) {
                 gridForTextingAnswers.add(answer6, 0, 5);
                 gridForTextingAnswers.add(answerField6, 1, 5);
                 if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose6, 2, 5);
-                gridForTextingAnswers.add(btn6, 3, 5);
+                gridForTextingAnswers.add(, 3, 5);
             }
 
         //ВОССТАНАВЛИВАЕМ СОХРАНЁННЫЙ ТЕКСТ
@@ -1124,7 +1116,7 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer1, 0, 0);
             gridForTextingAnswers.add(answerField1, 1, 0);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-            gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 0);
             if (answerType[0] == "Compiles"){
                 gridForTextingAnswers.add(answerField1Compilles, 2, 0);
                 gridForTextingAnswers.add(answerField2Compilles, 2, 1);
@@ -1134,7 +1126,7 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-            gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 1);
             //ВОССТАНАВЛИВАЕМ СОХРАНЁННЫЙ ТЕКСТ
             answerField1.setText(savedText1);
             answerField2.setText(savedText2);
@@ -1157,17 +1149,17 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer1, 0, 0);
             gridForTextingAnswers.add(answerField1, 1, 0);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-            gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 0);
 
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-            gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 1);
 
             gridForTextingAnswers.add(answer3, 0, 2);
             gridForTextingAnswers.add(answerField3, 1, 2);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose3, finalIsSpaseForCompilesTextField + 1, 2);
-            gridForTextingAnswers.add(btn3, finalIsSpaseForCompilesTextField + 1, 2);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 2);
             if (answerType[0] == "Compiles"){
                 gridForTextingAnswers.add(answerField1Compilles, 2, 0);
                 gridForTextingAnswers.add(answerField2Compilles, 2, 1);
@@ -1200,22 +1192,22 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer1, 0, 0);
             gridForTextingAnswers.add(answerField1, 1, 0);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-            gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 0);
 
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-            gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 1);
 
             gridForTextingAnswers.add(answer3, 0, 2);
             gridForTextingAnswers.add(answerField3, 1, 2);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose3, finalIsSpaseForCompilesTextField + 1, 2);
-            gridForTextingAnswers.add(btn3, finalIsSpaseForCompilesTextField + 1, 2);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 2);
 
             gridForTextingAnswers.add(answer4, 0, 3);
             gridForTextingAnswers.add(answerField4, 1, 3);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose4, finalIsSpaseForCompilesTextField + 1, 3);
-            gridForTextingAnswers.add(btn4, finalIsSpaseForCompilesTextField + 1, 3);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 3);
             if (answerType[0] == "Compiles"){
                 gridForTextingAnswers.add(answerField1Compilles, 2, 0);
                 gridForTextingAnswers.add(answerField2Compilles, 2, 1);
@@ -1253,27 +1245,27 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer1, 0, 0);
             gridForTextingAnswers.add(answerField1, 1, 0);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-            gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 0);
 
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-            gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 1);
 
             gridForTextingAnswers.add(answer3, 0, 2);
             gridForTextingAnswers.add(answerField3, 1, 2);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose3, finalIsSpaseForCompilesTextField, 2);
-            gridForTextingAnswers.add(btn3, finalIsSpaseForCompilesTextField + 1, 2);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 2);
 
             gridForTextingAnswers.add(answer4, 0, 3);
             gridForTextingAnswers.add(answerField4, 1, 3);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose4, finalIsSpaseForCompilesTextField, 3);
-            gridForTextingAnswers.add(btn4, finalIsSpaseForCompilesTextField + 1, 3);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 3);
 
             gridForTextingAnswers.add(answer5, 0, 4);
             gridForTextingAnswers.add(answerField5, 1, 4);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose5, finalIsSpaseForCompilesTextField, 4);
-            gridForTextingAnswers.add(btn5, finalIsSpaseForCompilesTextField + 1, 4);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 4);
             if (answerType[0] == "Compiles"){
                 gridForTextingAnswers.add(answerField1Compilles, 2, 0);
                 gridForTextingAnswers.add(answerField2Compilles, 2, 1);
@@ -1316,32 +1308,32 @@ public class HowManyAnswers {
             gridForTextingAnswers.add(answer1, 0, 0);
             gridForTextingAnswers.add(answerField1, 1, 0);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose1, finalIsSpaseForCompilesTextField, 0);
-            gridForTextingAnswers.add(btn1, finalIsSpaseForCompilesTextField + 1, 0);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 0);
 
             gridForTextingAnswers.add(answer2, 0, 1);
             gridForTextingAnswers.add(answerField2, 1, 1);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose2, finalIsSpaseForCompilesTextField, 1);
-            gridForTextingAnswers.add(btn2, finalIsSpaseForCompilesTextField + 1, 1);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 1);
 
             gridForTextingAnswers.add(answer3, 0, 2);
             gridForTextingAnswers.add(answerField3, 1, 2);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose3, finalIsSpaseForCompilesTextField, 2);
-            gridForTextingAnswers.add(btn3, finalIsSpaseForCompilesTextField + 1, 2);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 2);
 
             gridForTextingAnswers.add(answer4, 0, 3);
             gridForTextingAnswers.add(answerField4, 1, 3);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose4, finalIsSpaseForCompilesTextField, 3);
-            gridForTextingAnswers.add(btn4, finalIsSpaseForCompilesTextField + 1, 3);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 3);
 
             gridForTextingAnswers.add(answer5, 0, 4);
             gridForTextingAnswers.add(answerField5, 1, 4);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose5, finalIsSpaseForCompilesTextField, 4);
-            gridForTextingAnswers.add(btn5, finalIsSpaseForCompilesTextField + 1, 4);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 4);
 
             gridForTextingAnswers.add(answer6, 0, 5);
             gridForTextingAnswers.add(answerField6, 1, 5);
             if (answerType[0] != "Compiles")gridForTextingAnswers.add(answerChoose6, finalIsSpaseForCompilesTextField, 5);
-            gridForTextingAnswers.add(btn6, finalIsSpaseForCompilesTextField + 1, 5);
+            gridForTextingAnswers.add(, finalIsSpaseForCompilesTextField + 1, 5);
             if (answerType[0] == "Compiles"){
                 gridForTextingAnswers.add(answerField1Compilles, 2, 0);
                 gridForTextingAnswers.add(answerField2Compilles, 2, 1);
@@ -1372,9 +1364,9 @@ public class HowManyAnswers {
         boolean[] checkBoxes = new boolean[6];
         final boolean[] isError = {false};
 
-        Button btn = new Button("Далее");
-        grid.add(btn, 1, 9);
-        btn.setOnAction(event -> {
+        Button = new Button("Далее");
+        grid.add( 1, 9);
+        setOnAction(event -> {
             if (answerType[0] == "One" || answerType[0] == "Sort") {
 
                 answers[0] = answerField1.getText();
@@ -1436,10 +1428,10 @@ public class HowManyAnswers {
     public static void saveTextOuToFile(String qText, boolean debug, Logger log) {
         try {
         //Сохраняем текст вопроса в файл
-        BufferedWriter bw = null;
+        BufferedWriter bw;
             bw = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(System.getProperty("user.dir") + "\\sample\\ckeditor\\editorForEditingQu.htm")));
-            /*OUT*/ System.out.println(System.getProperty("user.dir") + "\\sample\\ckeditor\\editorForEditingQu.htm");
+             //System.out.println(System.getProperty("user.dir") + "\\sample\\ckeditor\\editorForEditingQu.htm");
 
 
             bw.write("<html>" +

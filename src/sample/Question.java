@@ -25,6 +25,8 @@ public class Question {
         for (int j = 0; j < answers.length; j++) {
             try {
                 answers[j] = HTMLEntities.htmlentities(answers[j]);
+                answers[j] = HTMLEntities.htmlDoubleQuotes(answers[j]);
+                answers[j] = HTMLEntities.htmlSingleQuotes(answers[j]);
             } catch (Exception e) {
                 log.warning(e.getLocalizedMessage());
             }

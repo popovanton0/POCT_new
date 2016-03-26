@@ -5,26 +5,35 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -32,8 +41,6 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -48,7 +55,7 @@ public class Main extends Application {
 
 
     double version = 2.1;
-    boolean debug = true;
+    boolean debug = false;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
     public static final Level LOG_LEVEL = Level.CONFIG;
     GridPane grid = new GridPane();
@@ -58,9 +65,10 @@ public class Main extends Application {
     String appName = "POCT";
     Integer subjectId = 0000;
     int nCreatedQu;
+    final Question[][] questions = new Question[1][1];
     finalTest test = new finalTest();
     Button saveTestToFile = new Button("Сохранить тест в файл");
-    String endEndResult;
+    private String endEndResult;
     String loadedTestName = "";
     String debugText = "";
     String logsLimit = "50";
@@ -68,118 +76,80 @@ public class Main extends Application {
     static Logger log = Logger.getLogger(Main.class.getName());
     private static Sender tlsSender = new Sender("help_review@mail.ru", getVar("ctg 45"));
     boolean isLoaded = false;
+    Text stringUpdate;
+    private int count = 0;
     public static void main(String[] args) {launch(args);}
 
     @Override
     public void start(Stage primaryStage) {
         try {
-            try {
-                List<String> arg = getParameters().getUnnamed();
-                if (arg.size() != 0) {
-                    debugText = arg.get(0);
-                    logsLimit = arg.get(1);
-                    log.info("limit of logs from console: " + logsLimit);
-                    log.info("debugText is: " + debugText);
+            if (count == 0) {
+                try {
+                    List<String> arg = getParameters().getUnnamed();
+                    if (arg.size() != 0) {
+                        debugText = arg.get(0);
+                        logsLimit = arg.get(1);
+                        log.info("limit of logs from console: " + logsLimit);
+                        log.info("debugText is: " + debugText);
+                    }
+                } catch (Exception e) {
+                    log.warning(getStackTrace(e));
                 }
-            } catch (Exception e) {
-                log.warning(getStackTrace(e));
+                count++;
             }
-
-
 
             if (debugText.equals("debug")) {
                 debug = true;
-                String isDebug;
-                if (debug) isDebug = "true";
-                else isDebug = "false";
-                System.setProperty("isDebugModeEnabled", isDebug);
-                log.config("Debug mode: " + isDebug);
+                log.config("Debug mode: " + PopovUtilites.booleanToString(debug));
             }
-
+            System.setProperty("isDebugModeEnabled", PopovUtilites.booleanToString(debug));
             //Настраиваем лог
             settingUpLogging(Integer.parseInt(logsLimit));
-
             log.info("Starting app...");
+
+
+            // Проверяем обновления
+            checkUpdate(false);
+
+            BorderPane root = new BorderPane();
+            root.setCenter(grid);
+
+            addMenuBar(root, primaryStage, stringUpdate);
+
+            TreeItem<File> treeFileView = createNode(new File("C:/ROST_tests"));
+            treeFileView.expandedProperty().setValue(true);
+
+            TreeView treeView = new TreeView<File>(treeFileView);
+
+            EventHandler<MouseEvent> mouseEventHandle = (MouseEvent event) -> {
+                String loadedQu = null;
+                isLoaded = true;
+                Question[] question = loadQuestions(primaryStage, loadFromFile(loadedQu, handleMouseClicked(event, treeView)));
+                questions[0] = openQuestionsEditor(question.length, question, primaryStage, grid);
+            };
+
+
+            treeView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEventHandle);
+
+            root.setLeft(treeView);
 
             primaryStage.setTitle(appName);
             grid.setAlignment(Pos.CENTER);
             grid.setHgap(10);
             grid.setVgap(10);
             grid.setPadding(new Insets(25, 25, 25, 25));
-            ScrollPane root = new ScrollPane(grid);
 
             if (debug){
-                grid.add(new Label("ВНИМАНИЕ !!! Вы находитесь в режиме \nразработчика. В этом режиме\n программа работает \nНЕ стабильно. \nЕсли вы не знаете что это, \nперезапустите програму"), 0, 6);
+                grid.add(new Label("ВНИМАНИЕ !!! Вы находитесь в режиме \nразработчика. В этом режиме\n программа работает \nНЕ стабильно. \nЕсли вы не знаете что это, \nперезапустите програму"), 0, 5);
                 Label look = new Label(" <<== ВНИМАНИЕ !!!");
-                grid.add(look, 1, 6);
+                grid.add(look, 1, 5);
             }
 
             //Заголовок
-            easterEgg();
             grid.add(scenetitle, 0, 0, 2, 1);
 
             Button feedback = new Button("Отзыв");
-            feedback.setOnAction(event3 -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setHeaderText("Отзыв о программе");
-                GridPane emailPane = new GridPane();
-                emailPane.setGridLinesVisible(debug);
-                Label textFeedback = new Label("Текст отзыва:");
-                TextArea textField = new TextArea();
-                Label emailOfUserLabel = new Label("Ваша почта для обратной связи: ");
-                TextField emailOfUser = new TextField();
-                emailOfUser.setPromptText("ваша_почта@mail.ru");
-                emailPane.add(textFeedback, 0, 0);
-                emailPane.add(textField, 1, 0);
-                emailPane.add(emailOfUserLabel, 0, 1);
-                emailPane.add(emailOfUser, 1, 1);
-                emailPane.setVgap(12);
-                alert.getDialogPane().setContent(emailPane);
-                //Date currentDate = new Date();
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == ButtonType.OK) {
-                    Alert alert1 = new Alert(Alert.AlertType.INFORMATION);
-                    alert1.setHeaderText("Отправка ...");
-                    alert1.setContentText("Идёт отправка отзыва. Ваш отзыв скопирован в буфер обмена.");
-                    alert1.show();
-                    log.info("Show \"Sending ...\" dialog");
-                    String msgToCopy = textField.getText();
-                    //Копируем в буфер обмена
-                    if (copyToClipBoard(msgToCopy)) return;
-
-
-
-                    //Делаем красивый лист
-                    String systemProperties = "";
-                    Properties p = null;
-                    try {
-                        p = System.getProperties();
-                    } catch (Exception e) {
-                        log.warning(getStackTrace(e));
-                    }
-                    Enumeration keys = p.keys();
-                    while (keys.hasMoreElements()) {
-                        String key = (String)keys.nextElement();
-                        String value = (String)p.get(key);
-                        systemProperties = systemProperties + "\n" + key + ": " + value;
-                    }
-
-
-                    //Отправляем письмо
-                    tlsSender.send("[POCT] Отзыв",
-                            "Текст отзыва:\n" + textField.getText() + "\n---------------------------------------------\n" +
-                                    "Почта для связи с user`ом: " + emailOfUser.getText() + "\n" +
-                                    "Версия программы: " + Double.toString(version) + "\n" +
-                                    "Дата отправки: " + new Date() + "\n СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------(http://developer-remarks.blogspot.ru/2012/12/system-get-properties.html )------------------------\n" + systemProperties +
-                                    "\n ДР. СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------------------------------\n" + System.getenv(),
-                            "popovanton0@gmail.com", "help_review@mail.ru", log);
-                    alert1.close();
-                    Alert alert11 = new Alert(Alert.AlertType.INFORMATION);
-                    alert11.setHeaderText("Отзыв успешно отправлен !");
-                    log.info("Feedback sended successfully");
-                    alert11.showAndWait();
-                }
-            });
+            feedback.setOnAction(event3 -> sendFeedback());
             grid.add(feedback, 1, 0);
 
             //Название теста
@@ -240,22 +210,6 @@ public class Main extends Application {
             btn.setText("Далее");
             grid.add(btn, 1, 4);
 
-
-            final Question[][] questions = new Question[1][1];
-
-            //Загружаем тест из файла
-            Button loadTestFromFileBtn = new Button("Загрузить тест из файла");
-            loadTestFromFileBtn.setTooltip(new Tooltip("Тестовая фича, находится в разработке"));
-            if (debug) grid.add(loadTestFromFileBtn, 1, 5);
-
-
-            loadTestFromFileBtn.setOnAction(event2 -> {
-                isLoaded = true;
-                log.info("Is loaded Questions: " + isLoaded);
-                Question[] loadedQuestionsFromFile = loadQuestions(primaryStage);
-                questions[0] = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
-
-            });
 
             btn.setOnAction(event -> {
                 log.info("Test name: " + testNameTextField.getText());
@@ -346,11 +300,12 @@ public class Main extends Application {
 
 
                 finalTest test = new finalTest();
+
                 test.testName = testNameTextField.getText();
-                test.questionsFmt = questionsFmt;
-                test.subjectId = subjectId;
                 log.info("isLoaded on save: " + isLoaded + "\n loadedTestName: " + loadedTestName);
                 if (isLoaded) test.testName = loadedTestName;
+                test.questionsFmt = questionsFmt;
+                test.subjectId = subjectId;
                 endEndResult = test.getFormatedTest();
 
                 log.info("На saveTestToFile" + endEndResult);
@@ -431,57 +386,179 @@ public class Main extends Application {
 
             //ДЕЛАЕМ СЦЕНУ
             Scene scene = new Scene(root, 520, 375);
-            if (debug) {
-                primaryStage.setMinWidth(560);
-                primaryStage.setMinHeight(465);
-            }
+
+            primaryStage.setMinWidth(790);
+            primaryStage.setMinHeight(465);
+
             primaryStage.setScene(scene);
-            if (debug == true) grid.setGridLinesVisible(true);
+            if (debug) grid.setGridLinesVisible(true);
             primaryStage.show();
-            //ПОДГРУЖАЕМ ОБНОВЛЕНИЯ С ИНЕТА
-            checkUpdate();
+
             log.setLevel(Level.ALL);
             log.info("Started");
         } catch (Exception e) {
             log.warning(getStackTrace(e));
         }
     }
-    static String readFile(String path)
-            throws IOException
-    {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded);
+
+    public void sendFeedback() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("Отзыв о программе");
+        GridPane emailPane = new GridPane();
+        emailPane.setGridLinesVisible(debug);
+        Label textFeedback = new Label("Текст отзыва:");
+        TextArea textField = new TextArea();
+        Label name = new Label("Ваше имя: ");
+        TextField nameTextField = new TextField();
+        nameTextField.setPromptText("Иванов Иван Иванович");
+        Label emailOfUserLabel = new Label("Ваша почта для обратной связи: ");
+        TextField emailOfUser = new TextField();
+        emailOfUser.setPromptText("ваша_почта@mail.ru");
+        emailPane.add(textFeedback, 0, 0);
+        emailPane.add(textField, 1, 0);
+        emailPane.add(name, 0, 1);
+        emailPane.add(nameTextField, 1, 1);
+        emailPane.add(emailOfUserLabel, 0, 2);
+        emailPane.add(emailOfUser, 1, 2);
+        emailPane.setVgap(12);
+        alert.getDialogPane().setContent(emailPane);
+        //Date currentDate = new Date();
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK) {
+            Alert alert1 = new Alert(Alert.AlertType.INFORMATION);
+            alert1.setHeaderText("Отправка ...");
+            alert1.setContentText("Идёт отправка отзыва. Ваш отзыв скопирован в буфер обмена.");
+            alert1.show();
+            log.info("Show \"Sending ...\" dialog");
+            String msgToCopy = textField.getText();
+            //Копируем в буфер обмена
+            if (copyToClipBoard(msgToCopy)) return;
+
+
+
+            //Делаем красивый лист
+            String systemProperties = "";
+            Properties p = null;
+            try {
+                p = System.getProperties();
+            } catch (Exception e) {
+                log.warning(getStackTrace(e));
+            }
+            Enumeration keys = p.keys();
+            while (keys.hasMoreElements()) {
+                String key = (String)keys.nextElement();
+                String value = (String)p.get(key);
+                systemProperties = systemProperties + "\n" + key + ": " + value;
+            }
+
+
+            //Отправляем письмо
+            tlsSender.send("[POCT] Отзыв",
+                    "Текст отзыва:\n" + textField.getText() + "\n---------------------------------------------\n" +
+                            "ФИО user`а:" + nameTextField.getText() + "\n" +
+                            "Почта для связи с user`ом: " + emailOfUser.getText() + "\n" +
+                            "Версия программы: " + Double.toString(version) + "\n" +
+                            "Дата отправки: " + new Date() + "\n СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------(http://developer-remarks.blogspot.ru/2012/12/system-get-properties.html )------------------------\n" + systemProperties +
+                            "\n ДР. СИСТЕМНАЯ ИНФОРМАЦИЯ:\n-----------------------------------\n" + System.getenv(),
+                    "popovanton0@gmail.com", "help_review@mail.ru", log);
+            alert1.close();
+            Alert alert11 = new Alert(Alert.AlertType.INFORMATION);
+            alert11.setHeaderText("Отзыв успешно отправлен !");
+            log.info("Feedback sended successfully");
+            alert11.showAndWait();
+        }
     }
 
-
-    private Question[] loadQuestions(Stage primaryStage) {
-        String loadedQu = null;// = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
-
-        File file = new FileChooser().showOpenDialog(primaryStage);
+    public String loadFromFile(String loadedQu, File file) {
         if (file != null) {
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
-                loadedQu = readFile(file.getPath());
-            } catch (FileNotFoundException e) {
-                log.warning(getStackTrace(e));
-            } catch (IOException e) {
+                String sCurrentLine;
+                loadedQu = "";
+                while ((sCurrentLine = br.readLine()) != null) {
+                    loadedQu = loadedQu + sCurrentLine;
+                }
+            } catch (Exception e) {
                 log.warning(getStackTrace(e));
             }
         }
+        return loadedQu;
+    }
 
+    public void addMenuBar(BorderPane root, Stage primaryStage, Text stringUpdate) {
+        //Меню бар
+        MenuBar menuBar = new MenuBar();
+
+        //Меню
+        javafx.scene.control.Menu menu = new javafx.scene.control.Menu("Файл");
+        MenuItem newFile = new MenuItem("Новый тест");
+
+        newFile.setOnAction(event -> {
+            //Код лля перезапуска приложения
+            log.info("Choosed \"New Test\" menu");
+        });
+
+        MenuItem open = new MenuItem("Открыть...");
+        open.setOnAction(event -> {
+            log.info("Choosed \"Open...\" menu");
+            isLoaded = true;
+            log.info("Is loaded Questions: " + isLoaded);
+
+            String loadedQu = null;
+
+            File file = new FileChooser().showOpenDialog(primaryStage);
+
+            loadedQu = loadFromFile(loadedQu, file);
+
+            Question[] loadedQuestionsFromFile = loadQuestions(primaryStage, loadedQu);
+            questions[0] = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
+        });
+
+        MenuItem exit = new MenuItem("Выход");
+        exit.setOnAction(event -> {
+            log.warning("Exiting via file menu...");
+            System.exit(0);
+        });
+
+        javafx.scene.control.Menu aboutProgramm = new javafx.scene.control.Menu("О прграмме");
+        MenuItem update = new MenuItem("Проверить обновления");
+        update.setOnAction(event -> {
+            checkUpdate(true);
+        });
+
+        MenuItem site = new MenuItem("Сайт программы");
+        site.setOnAction(event -> getHostServices().showDocument("http://popovanton0.github.io/POCT_new/"));
+
+        MenuItem feedback = new MenuItem("Написать отзыв");
+        feedback.setOnAction(event -> sendFeedback());
+
+        MenuItem about = new MenuItem("О программе");
+        about.setOnAction(event -> easterEgg());
+        aboutProgramm.getItems().addAll(update, site, feedback, about);
+
+        menu.getItems().addAll(newFile, open, new SeparatorMenuItem(), exit);
+        menuBar.getMenus().addAll(menu, aboutProgramm);
+        root.setTop(menuBar);
+    }
+
+
+    private Question[] loadQuestions(Stage primaryStage, String loadedQu) {
+        // = "{\"INFO\":\"\",\"NAME\":\"Десятичные дроби\",\"ISDELETED\":false,\"DELETEDATE\":null,\"TESTGROUPID\":null,\"SUBJECTID\":2530,\"THEMES\":[{\"NUMBER\":1,\"NAME\":\"Сложение и вычитание\",\"INFO\":\"\",\"ISDELETED\":false,\"DELETEDATE\":null,\"QUESTIONS\":[{\"DELETEDATE\":null,\"NUMBER\":1,\"COMMENT\":\"\",\"ANSWERTYPE\":\"One\",\"TEXT\":\"<p>Выберите из списка десятичную дробь</p>\\n\",\"NAME\":\"Выберите из списка десятичную дробь\",\"DIFFICULTID\":9,\"ISREGISTRSENSITIVENESS\":false,\"ISSPACESENSITIVENESS\":false,\"ISDELETED\":false,\"ISREGEXPR\":false,\"ANSWERS\":[{\"NUMBER\":1,\"TEXT\":\"<p>12</p>\\n\",\"VALUE\":\"False\"},{\"NUMBER\":2,\"TEXT\":\"<p>12,5</p>\\n\",\"VALUE\":\"True\"}]}]}]}";
+
+        log.info("loadedQu string = " + loadedQu);
         JsonReader reader = new JsonReader(new StringReader(loadedQu));
         reader.setLenient(true);
         JsonElement start = new Gson().fromJson(reader, JsonElement.class);
-        JsonArray themesArray = null;
+        JsonArray themesArray;
         JsonArray questionsArray = null;
         loadedTestName = start.getAsJsonObject().getAsJsonPrimitive("NAME").getAsString();
         log.info(loadedTestName);
         try {
             themesArray = start.getAsJsonObject().getAsJsonArray("THEMES");
-            questionsArray = (JsonArray) themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
+            questionsArray = themesArray.get(0).getAsJsonObject().getAsJsonArray("QUESTIONS");;
         } catch (Exception e) {
             log.warning(getStackTrace(e));
-            showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+            showAlert(Alert.AlertType.ERROR, "Ошибка", " 1 - Ошибка: не удалость преобразовать в JSON массив [\n" + getStackTrace(e) + "\n]", false, new GridPane());
             primaryStage.close();
         }
 
@@ -498,7 +575,7 @@ public class Main extends Application {
                 JsonObject object = (JsonObject) questionsArray.get(j);
 
 
-                questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+                questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "").replace("\\n", "");
                 questions[j].answerType = object.getAsJsonObject().getAsJsonPrimitive("ANSWERTYPE").getAsString();
                 questions[j].isRegistrSense = false;
                 questions[j].isSpaceSense = false;
@@ -529,7 +606,7 @@ public class Main extends Application {
             }
         } catch (Exception e) {
             log.warning(getStackTrace(e));
-            showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + e.toString() + "\n]", false, new GridPane());
+            showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка: не удалость преобразовать в JSON массив [\n" + getStackTrace(e) + "\n]", false, new GridPane());
             primaryStage.close();
         }
 
@@ -591,51 +668,62 @@ public class Main extends Application {
         }
     }
 
-    public void checkUpdate() {
+    public void checkUpdate(Boolean isMenu) {
         try {
-            Text isUpdate = new Text();
+            Button installUpdate;
             JsonObject json = null;
             try {
                 json = readJsonFromUrl("https://raw.githubusercontent.com/popovanton0/POCT_new/master/updateCheck.json");
             } catch (Exception e) {
                 log.warning(getStackTrace(e));
             }
+
+            String urlWithOutQuotes = json.get("url").toString().replace("\"", "");
+            log.info("urlToUpdate: " + urlWithOutQuotes);
+
             if (json != null) {
-                if (json.get("version").getAsDouble() > version){
+                if (json.get("version").getAsDouble() > version) {
                     log.info("Доступная версия " + json.get("version").getAsDouble() + " > чем " + version);
-                    String withOutQuotes = json.get("msgToUpdate").toString().replace("\"", "");
-                    log.info("msgToUpdate: " + withOutQuotes);
-                    isUpdate.setText(withOutQuotes + "\nВерсия " + json.get("version").getAsDouble() + "\nНажмите для обновления");
-                    isUpdate.setFill(javafx.scene.paint.Paint.valueOf("green"));
+                    String updateMsgWithOutQuotes = json.get("msgToUpdate").toString().replace("\"", "");
+                    log.info("msgToUpdate: " + updateMsgWithOutQuotes);
+
+                    GridPane updatePane = new GridPane();
+
+                    installUpdate = new Button("Установить обновление");
+                    updatePane.add(installUpdate, 2, 0);
+                    installUpdate.setOnAction(event -> getHostServices().showDocument(urlWithOutQuotes));
+                    // Показ уведомления об обновлении при запуске
+                    showAlert(Alert.AlertType.INFORMATION, "Доступно обновление программы !", updateMsgWithOutQuotes, true, updatePane);
                 } else {
                     String withOutQuotes = json.get("msgNoUpdate").toString().replace("\"", "");
-                    log.info("No updates found, msgNoUpdate: " + withOutQuotes);
-                    isUpdate.setText(withOutQuotes);
+                    log.info("No updates found (" + json.get("version").getAsDouble() + " <= " + version + "), msgNoUpdate: " + withOutQuotes);
+                    if (isMenu)
+                        showAlert(Alert.AlertType.INFORMATION, "Обновлений нет", withOutQuotes, false, new GridPane());
                 }
-            }else {
-                log.info("Нет подключения к интеренету");
-                isUpdate.setText("\nНет подключения к интеренету, urlToUpdate: " + updateUrl);
-                isUpdate.setFill(javafx.scene.paint.Paint.valueOf("red"));
-                isUpdate.setOnMouseClicked(event -> {
-                    getHostServices().showDocument(updateUrl);
-                });
             }
-
-            String withOutQuotes = json.get("url").toString().replace("\"", "");
-            log.info("urlToUpdate: " + withOutQuotes);
-            isUpdate.setOnMouseClicked(event -> {
-                getHostServices().showDocument(withOutQuotes);
-            });
-            grid.add(isUpdate, 0, 4);
         } catch (Exception e) {
-            log.warning(getStackTrace(e));
+            if (isMenu)
+                showAlert(Alert.AlertType.ERROR, "Ошибка", "Нет подключения к интеренету, загрузка обновлений невозможна", false, new GridPane());
+            log.info("No internet connection detected");
         }
     }
+
     public static String getStackTrace(final Throwable throwable) {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw, true);
         throwable.printStackTrace(pw);
         return sw.getBuffer().toString();
+    }
+
+    private File handleMouseClicked(MouseEvent event, TreeView treeView) {
+        File name = null;
+        Node node = event.getPickResult().getIntersectedNode();
+        // Accept clicks only on node cells, and not on empty spaces of the TreeView
+        if (node instanceof Text || (node instanceof TreeCell && ((TreeCell) node).getText() != null)) {
+            name = (File) ((TreeItem) treeView.getSelectionModel().getSelectedItem()).getValue();
+            log.info("Node click: " + name.getPath());
+        }
+        return name;
     }
 
     public boolean copyToClipBoard(String msgToCopy) {
@@ -710,6 +798,16 @@ public class Main extends Application {
                 boolean isRegistrSense = editingQu.isRegistrSense;
                 boolean isSpaceSense = editingQu.isSpaceSense;
                 int nAn = editingQu.nAn;
+
+                //Отчищаем answers от тегов html
+                for(int j = 0; j < editingQu.answers.length; j++) {
+                    try {
+                        editingQu.answers[j] = HTMLEntities.unhtmlentities(editingQu.answers[j]);
+                    } catch (Exception e) {
+                        log.warning(getStackTrace(e));
+                    }
+                }
+
                 String answers[] = editingQu.answers;
 
                 boolean[] checkBoxes = editingQu.checkBoxes;
@@ -748,7 +846,7 @@ public class Main extends Application {
         return question;
     }
     public static String getf(){
-        return "oxya";
+        return "jxyl";
     }
 
     public Question startMakeMagic(int i, Window primaryStage) {
@@ -797,61 +895,101 @@ public class Main extends Application {
     private static String getVar(String var) {
 
         try {
-            if (var == "ctg 45"){
+            if (var.equals("ctg 45")){
                 for (int i = 0; i < 5; i++) {
-                    if (i == 0)var = "a";
-                    if (i == 1)var = var + "w";
-                    if (i == 2)var = var + "d";
-                    if (i == 3)var = var + "y";
+                    if (i == 0)var = "w";
+                    if (i == 1)var = var + "k";
+                    if (i == 2)var = var + "f";
+                    if (i == 3)var = var + "i";
                 }
             }else {}
         } catch (Exception e) {
             log.warning(getStackTrace(e));
         }
-        return var + "qtcaihpv" + getf();
+
+        return var + "watzqcij" + getf();
+    }
+    private TreeItem<File> createNode(final File f) {
+        return new TreeItem<File>(f) {
+            private boolean isLeaf;
+            private boolean isFirstTimeChildren = true;
+            private boolean isFirstTimeLeaf = true;
+
+            @Override
+            public ObservableList<TreeItem<File>> getChildren() {
+                if (isFirstTimeChildren) {
+                    isFirstTimeChildren = false;
+                    super.getChildren().setAll(buildChildren(this));
+                }
+                return super.getChildren();
+            }
+
+
+
+            @Override
+            public boolean isLeaf() {
+                if (isFirstTimeLeaf) {
+                    isFirstTimeLeaf = false;
+                    File f = (File) getValue();
+                    isLeaf = f.isFile();
+                }
+                return isLeaf;
+            }
+
+            private ObservableList<TreeItem<File>> buildChildren(
+                    TreeItem<File> TreeItem) {
+                File f = TreeItem.getValue();
+                if (f == null) {
+                    return FXCollections.emptyObservableList();
+                }
+                if (f.isFile()) {
+                    return FXCollections.emptyObservableList();
+                }
+                File[] files = f.listFiles();
+                if (files != null) {
+                    ObservableList<TreeItem<File>> children = FXCollections
+                            .observableArrayList();
+                    for (File childFile : files) {
+                        children.add(createNode(childFile));
+                    }
+                    return children;
+                }
+                return FXCollections.emptyObservableList();
+            }
+        };
     }
 
     public void easterEgg() {
         try {
-            scenetitle.setOnContextMenuRequested(event2 -> {
-                scenetitle.setOnScroll(event1 -> {
-                    scenetitle.setOnMouseClicked(event -> {
-                        scenetitle.setOnScroll(event3 -> {
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Easter egg");
-                            alert.setHeaderText("Создатель этой великолепной программы - Попов Антон Палович\nУченик МБОУ \"СОШ №62\", 2016.");
-                            GridPane gr = new GridPane();
-                            Image img = null;
-                            try {
-                                img = new Image(getClass().getResourceAsStream("qu.class"));
-                            } catch (Exception e) {
-                                log.warning(getStackTrace(e));
-                            }
-                            ImageView imageView = new ImageView(img);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Easter egg");
+            alert.setHeaderText("Создатель этой программы - Попов Антон Палович\nУченик МБОУ \"СОШ №62\", 2016.");
+            GridPane gr = new GridPane();
+            Image img = null;
+            try {
+                img = new Image(getClass().getResourceAsStream("qu.class"));
+            } catch (Exception e) {
+                log.warning(getStackTrace(e));
+            }
+            ImageView imageView = new ImageView(img);
 
-                            Label label = new Label("«Пасхальное яйцо» (англ. Easter Egg) — \nразновидность секрета, оставляемого в игре, \nфильме или программном обеспечении создателями. \n" +
-                                    "Пасхальные яйца играют роль своеобразных \nшуток для внимательных игроков или зрителей. \n" +
-                                    "Чаще всего для «получения» пасхального яйца следует \nпроизвести сложную и/или нестандартную совокупность\n действий, " +
-                                    "что делает маловероятным либо \nпрактически исключает случайное обнаружение.");
-                            label.setOnScroll(event4 -> {
-                                label.setOnContextMenuRequested(event5 -> {
-                                    Alert anotherAlert = new Alert(Alert.AlertType.INFORMATION);
-                                    anotherAlert.setTitle("Another one Easter egg");
-                                    anotherAlert.setHeaderText("Ещё одна пасхалка !");
-                                    anotherAlert.showAndWait();
-                                });
-                            });
-                            label.setPadding(new Insets(10, 10, 10, 10));
-                            gr.add(imageView, 0, 0);
-                            gr.add(label, 1, 0);
-                            gr.setGridLinesVisible(debug);
-                            alert.getDialogPane().setContent(gr);
-                            log.warning("EASTER EGG Activated");
-                            alert.showAndWait();
-                        });
-                    });
+            Label label = new Label("Особая благодарность выражается \nСоколовой Ольге Борисовне, \nпринимавшей активное участие в \nтестировании ранних версий программы.");
+            label.setOnScroll(event4 -> {
+                label.setOnContextMenuRequested(event5 -> {
+                    Alert anotherAlert = new Alert(Alert.AlertType.INFORMATION);
+                    anotherAlert.setTitle("Another one Easter egg");
+                    anotherAlert.setHeaderText("Ещё одна пасхалка !");
+                    anotherAlert.showAndWait();
                 });
             });
+            label.setPadding(new Insets(10, 10, 10, 10));
+            gr.add(imageView, 0, 0);
+            gr.add(label, 1, 0);
+            gr.setGridLinesVisible(debug);
+            alert.getDialogPane().setContent(gr);
+            log.warning("EASTER EGG Activated");
+            alert.showAndWait();
+
         } catch (Exception e) {
             log.warning(getStackTrace(e));
         }
@@ -859,7 +997,7 @@ public class Main extends Application {
 
     public void showAlert(Alert.AlertType alertType, String title, String headerText, boolean isPane, GridPane pane) {
         try {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            Alert alert = new Alert(alertType);
             alert.setTitle(title);
             alert.setHeaderText(headerText);
             if (isPane) alert.getDialogPane().setContent(pane);
