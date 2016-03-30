@@ -1,6 +1,7 @@
 package sample;
 
 import com.tecnick.htmlutils.htmlentities.HTMLEntities;
+import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.util.logging.Logger;
 
@@ -14,7 +15,7 @@ public class Question {
     boolean isSpaceSense;
     Integer nAn;
     String[] answers;
-    boolean[] checkBoxes;
+    String[] checkBoxes;
     int i;
     String answerType;
 
@@ -47,10 +48,10 @@ public class Question {
 
             if (answerType.equals("One") || answerType.equals("Many")) {
                 for (int j = 0; j < checkBoxes.length; j++) {
-                    if (checkBoxes[j] == true) {
+                    if (PopovUtilites.stringToBoolean(checkBoxes[j]) == true) {
                         for (int k = 0; k < checkBoxes.length; k++) {
                             if (k != j) {
-                                if (checkBoxes[k]) answerType = "Many";
+                                if (PopovUtilites.stringToBoolean(checkBoxes[j]) == true) answerType = "Many";
                             }
                         }
                     }
@@ -63,12 +64,10 @@ public class Question {
                 for (int i = 0; i < nAn; i++) {
                     log.info("starting create answer string, iteration " + i);
                     int n = i + 1;
-                    String ToF = "False";
-                    if (checkBoxes[i]) ToF = "True";
                     String answer = "{" +
                             "\"NUMBER\":" + n + "," +
                             "\"TEXT\":\"<p>" + answers[i] + "</p>\\n\"," +
-                            "\"VALUE\":\"" + ToF + "\"" +
+                            "\"VALUE\":\"" + checkBoxes[i] + "\"" +
                             "}";
 
                     if (i == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;

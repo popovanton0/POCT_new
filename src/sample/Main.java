@@ -126,12 +126,13 @@ public class Main extends Application {
                 isLoaded = true;
                 Question[] question = loadQuestions(primaryStage, loadFromFile(loadedQu, handleMouseClicked(event, treeView)));
                 questions[0] = openQuestionsEditor(question.length, question, primaryStage, grid);
+                grid.setGridLinesVisible(debug);
             };
 
 
             treeView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEventHandle);
 
-            root.setLeft(treeView);
+            if (debug) root.setLeft(treeView);
 
             primaryStage.setTitle(appName);
             grid.setAlignment(Pos.CENTER);
@@ -391,7 +392,7 @@ public class Main extends Application {
             primaryStage.setMinHeight(465);
 
             primaryStage.setScene(scene);
-            if (debug) grid.setGridLinesVisible(true);
+            grid.setGridLinesVisible(debug);
             primaryStage.show();
 
             log.setLevel(Level.ALL);
@@ -529,14 +530,15 @@ public class Main extends Application {
         MenuItem site = new MenuItem("Сайт программы");
         site.setOnAction(event -> getHostServices().showDocument("http://popovanton0.github.io/POCT_new/"));
 
-        MenuItem feedback = new MenuItem("Написать отзыв");
+        MenuItem feedback = new MenuItem("Отправить отзыв");
         feedback.setOnAction(event -> sendFeedback());
 
         MenuItem about = new MenuItem("О программе");
         about.setOnAction(event -> easterEgg());
         aboutProgramm.getItems().addAll(update, site, feedback, about);
-
-        menu.getItems().addAll(newFile, open, new SeparatorMenuItem(), exit);
+        //                              временно
+        if (debug)menu.getItems().addAll(newFile, open, new SeparatorMenuItem(), exit);
+        else menu.getItems().addAll(newFile, new SeparatorMenuItem(), exit);
         menuBar.getMenus().addAll(menu, aboutProgramm);
         root.setTop(menuBar);
     }
@@ -590,14 +592,23 @@ public class Main extends Application {
                 //ПОЛУЧАЕМ ОТВЕТЫ ИЗ JSON
                 JsonArray jsonAnswers = object.getAsJsonArray("ANSWERS");
                 questions[j].nAn = jsonAnswers.size();
+                log.info("jsonAnswers size = " + jsonAnswers.size());
                 String[] answers = new String[12];
-                boolean[] checkBoxes = new boolean[6];
+                String[] checkBoxes = new String[6];
                 for (int k = 0; k < jsonAnswers.size(); k++) {
-                    answers[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+                    // Защита от null (как, например, в прямом вводе)
+                    String text = "";
+                    try {
+                        text = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+                    } catch (Exception e) {
+                        log.warning("Catched exception, because text are null");
+                    }
+
+                    answers[k] = text;
+
                     log.info("Loaded answerText:" + answers[k]);
-                    if (jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString().equals("\"True\""))
-                        checkBoxes[k] = true;
-                    else checkBoxes[k] = false;
+                    checkBoxes[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString();
+
                     log.info("Loaded answerValue:" + jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString());
                 }
                 questions[j].answers = answers;
@@ -810,7 +821,7 @@ public class Main extends Application {
 
                 String answers[] = editingQu.answers;
 
-                boolean[] checkBoxes = editingQu.checkBoxes;
+                String[] checkBoxes = editingQu.checkBoxes;
                 n[0] = editingQu.i;
                 String[] answerType = new String[1];
                 answerType[0] = editingQu.answerType;
@@ -855,13 +866,13 @@ public class Main extends Application {
             int n = i + 1;
 
             log.info("number Of Question in startMakeMagic = " + n);
-            question = HowManyAnswers.newWindow(n, debug, this, primaryStage, nQu, false, "1", false, false, 1, new String[1], new boolean[1], new String[1], log);
+            question = HowManyAnswers.newWindow(n, debug, this, primaryStage, nQu, false, "1", false, false, 1, new String[1], new String[1], new String[1], log);
             log.info("Вариантов ответа на " + n + " вопрос: " + question.nAn);
 
 
             {
                 String[] answersMass = question.answers;
-                boolean[] checkBoxesMass = question.checkBoxes;
+                String[] checkBoxesMass = question.checkBoxes;
                 log.info("Текст " + n + " вопроса: " + question.qText);
                 for (int h = 0; h < answersMass.length; h++) {
                     int j = h + 1;
