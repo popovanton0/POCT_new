@@ -20,6 +20,8 @@ public class PopovUtilites  {
         Boolean result = null;
         if (boolStr.toLowerCase().equals("true")) result = true;
         if (boolStr.toLowerCase().equals("false")) result = false;
+        if (boolStr.toLowerCase().equals("\"true\"")) result = true;
+        if (boolStr.toLowerCase().equals("\"false\"")) result = false;
         return result;
     }
     public static int doubleToInt(double number){

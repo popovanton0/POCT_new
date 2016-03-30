@@ -1,6 +1,5 @@
 package sample;
 
-import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,6 +19,10 @@ import java.io.OutputStreamWriter;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
+
+import org.jsoup.Jsoup;
+
+
 
 /**
  * Created by popov on 22.02.2016.
@@ -189,6 +192,14 @@ public class HowManyAnswers {
                 boolean isError = false;
                 //ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА
                 if (answerType[0].equals("One") || answerType[0].equals("Sort") || answerType[0].equals("Compiles")) {
+                    if (!answerChoose1.isSelected() &&
+                            !answerChoose2.isSelected() &&
+                            !answerChoose3.isSelected() &&
+                            !answerChoose4.isSelected() &&
+                            !answerChoose5.isSelected() &&
+                            !answerChoose6.isSelected() &&
+                            !(answerType[0].equals("Sort") || answerType[0].equals("Compiles"))
+                            ) isError = true;
                     try {
                         answers[0] = HTMLEntities.htmlentities(answerField1.getText());
                         answers[1] = HTMLEntities.htmlentities(answerField2.getText());
@@ -231,7 +242,7 @@ public class HowManyAnswers {
                         main.showAlert(Alert.AlertType.ERROR, "Ошибка", "Вы не выбрали правильный вариант ответа !", false, new GridPane());
                     //ЕСЛИ ПРЯМОЙ ВВОД
                 } else if (answerType[0].equals("DirectInput")) {
-                    answers[0] = HTMLEntities.unhtmlentities(directInputTextField.getText());
+                    answers[0] = HTMLEntities.htmlentities(directInputTextField.getText());
                     checkBoxes[0] = "True";
                 }
                if (!debug) finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString();
@@ -491,9 +502,8 @@ public class HowManyAnswers {
         if (isEditor) {
             for (int i = 0; i < answersLoaded.length; i++) {
                 try {
-                    answersLoaded[i] = HTMLEntities.unhtmlentities(answersLoaded[i]).replace("<p>", "").replace("</p>", "").replace("\\n", "");
-                    answersLoaded[i] = HTMLEntities.unhtmlDoubleQuotes(answersLoaded[i]);
-                    answersLoaded[i] = HTMLEntities.unhtmlSingleQuotes(answersLoaded[i]);
+
+                    answersLoaded[i] = Jsoup.parse(answersLoaded[i].replace("amp;", "").replace("\\n", "")).text();
 
                     log.info("Formatted Answers: " + answersLoaded[i]);
                 } catch (Exception e) {

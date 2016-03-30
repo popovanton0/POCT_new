@@ -5,8 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
-import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 public class Main extends Application {
 
 
-
     double version = 2.1;
     boolean debug = false;
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
@@ -78,7 +77,10 @@ public class Main extends Application {
     boolean isLoaded = false;
     Text stringUpdate;
     private int count = 0;
+    private BorderPane root = new BorderPane();
+
     public static void main(String[] args) {launch(args);}
+    Stage mainStage;
 
     @Override
     public void start(Stage primaryStage) {
@@ -110,296 +112,303 @@ public class Main extends Application {
 
             // Проверяем обновления
             checkUpdate(false);
+            mainStage = primaryStage;
 
-            BorderPane root = new BorderPane();
-            root.setCenter(grid);
-
-            addMenuBar(root, primaryStage, stringUpdate);
-
-            TreeItem<File> treeFileView = createNode(new File("C:/ROST_tests"));
-            treeFileView.expandedProperty().setValue(true);
-
-            TreeView treeView = new TreeView<File>(treeFileView);
-
-            EventHandler<MouseEvent> mouseEventHandle = (MouseEvent event) -> {
-                String loadedQu = null;
-                isLoaded = true;
-                Question[] question = loadQuestions(primaryStage, loadFromFile(loadedQu, handleMouseClicked(event, treeView)));
-                questions[0] = openQuestionsEditor(question.length, question, primaryStage, grid);
-                grid.setGridLinesVisible(debug);
-            };
-
-
-            treeView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEventHandle);
-
-            if (debug) root.setLeft(treeView);
-
-            primaryStage.setTitle(appName);
-            grid.setAlignment(Pos.CENTER);
-            grid.setHgap(10);
-            grid.setVgap(10);
-            grid.setPadding(new Insets(25, 25, 25, 25));
-
-            if (debug){
-                grid.add(new Label("ВНИМАНИЕ !!! Вы находитесь в режиме \nразработчика. В этом режиме\n программа работает \nНЕ стабильно. \nЕсли вы не знаете что это, \nперезапустите програму"), 0, 5);
-                Label look = new Label(" <<== ВНИМАНИЕ !!!");
-                grid.add(look, 1, 5);
-            }
-
-            //Заголовок
-            grid.add(scenetitle, 0, 0, 2, 1);
-
-            Button feedback = new Button("Отзыв");
-            feedback.setOnAction(event3 -> sendFeedback());
-            grid.add(feedback, 1, 0);
-
-            //Название теста
-            Label testName = new Label("Название теста:");
-            grid.add(testName, 0, 1);
-            TextField testNameTextField = new TextField();
-            testNameTextField.setPromptText("Озёра. Реки. 8 класс.");
-            Tooltip testNameToolTip = new Tooltip("Впишите сюда название теста.");
-            testNameTextField.setTooltip(testNameToolTip);
-            grid.add(testNameTextField, 1, 1);
-
-            Label nQuLabel = new Label("Количество вопросов:      ");
-            grid.add(nQuLabel, 0, 2);
-            TextField nQuTextField = new TextField();
-            nQuTextField.setPromptText("7");
-            Tooltip nQuToolTip = new Tooltip("Впишите сюда количество вопросов.");
-            nQuTextField.setTooltip(nQuToolTip);
-            grid.add(nQuTextField, 1, 2);
-
-            Label subjectIdLabel = new Label("Выберите предмет");
-            grid.add(subjectIdLabel, 0, 3);
-            ChoiceBox subjectIdChoiceBox = new ChoiceBox();
-            Tooltip subjectIdChoiceBoxTooltip = new Tooltip("Предмет, которому принадлежит тест");
-            subjectIdChoiceBox.setTooltip(subjectIdChoiceBoxTooltip);
-            grid.add(subjectIdChoiceBox, 1, 3);
-            subjectIdChoiceBox.setItems(FXCollections.observableArrayList(
-                /*0*/"Предмета нет в списке",
-                /*1*/"Химия",
-                /*2*/"Природоведение",
-                /*3*/"Обучение здоровью",
-                /*4*/"Биология",
-                /*5*/"Этика и психология семейной жизни",
-                /*6*/"География",
-                /*7*/"Экономика"
-            ));
-            subjectIdChoiceBox.getSelectionModel().selectedIndexProperty().addListener(
-                    (ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
-                        if (new_val.intValue() == 0) subjectId = 0000;
-                        if (new_val.intValue() == 1) subjectId = 2523;
-                        if (new_val.intValue() == 2) subjectId = 2521;
-                        if (new_val.intValue() == 3) subjectId = 66855;
-                        if (new_val.intValue() == 4) subjectId = 2518;
-                        if (new_val.intValue() == 5) subjectId = 64251;
-                        if (new_val.intValue() == 6) subjectId = 2519;
-                        if (new_val.intValue() == 7) subjectId = 2953;
-                        if (new_val.intValue() == 8) subjectId = 0000;
-                        if (new_val.intValue() == 9) subjectId = 0000;
-                        if (new_val.intValue() == 10) subjectId = 0000;
-                        if (new_val.intValue() == 11) subjectId = 0000;
-                        if (new_val.intValue() == 12) subjectId = 0000;
-                        if (new_val.intValue() == 13) subjectId = 0000;
-
-                    }
-            );
-
-
-            //КНОПКА СОЗДАНИЯ ВОПРОСА
-            btn.setText("Далее");
-            grid.add(btn, 1, 4);
-
-
-            btn.setOnAction(event -> {
-                log.info("Test name: " + testNameTextField.getText());
-                log.info("Typed questions number: " + nQuTextField.getText());
-                nQuStr = nQuTextField.getText();
-                boolean fail = false;
-                try {
-                    nQu = new Integer(nQuStr);
-                } catch (NumberFormatException e) {
-                    fail = true;
-                    showAlert(Alert.AlertType.ERROR, "Ошибка", "Неверное значение строки \"Количество вопросов\"", false, new GridPane());
-
-                    log.info("Неверное значение строки \"Количество вопросов\"");
-                    log.warning(getStackTrace(e));
-                }
-                questions[0] = new Question[nQu];
-                if (testNameTextField.getText() != null && !testNameTextField.getText().trim().isEmpty() && nQuTextField.getText() != null && !nQuTextField.getText().trim().isEmpty() && !fail) {
-                    try {
-                        //ЗАПУСКАЕМ ДИАЛОГИ
-                        for (int i = 0; i < nQu; i++) {
-                            questions[0][i] = startMakeMagic(i, primaryStage);
-                        }
-                    } catch (Exception e) {
-                        showAlert(Alert.AlertType.ERROR, "Ошибка", e.getMessage(), false, new GridPane());
-                        log.warning(getStackTrace(e));
-                    }
-
-                    grid.getChildren().clear();
-                    GridPane pane = new GridPane();
-                    pane.setGridLinesVisible(debug);
-                    pane.setAlignment(Pos.CENTER);
-                    pane.setVgap(10);
-                    pane.setHgap(10);
-                    pane.setPadding(new Insets(15, 15, 15, 15));
-
-
-
-                    //СОЗДАНИЕ РЕДАКТОРА
-                    openQuestionsEditor(nQu, questions[0], primaryStage, pane);
-
-
-
-                    //pane.add(saveTestToFile, 2, nQu);
-                    primaryStage.setScene(new Scene(new ScrollPane(pane)));
-                    primaryStage.setMinHeight(120);
-                    primaryStage.setMinWidth(410);
-                    primaryStage.show();
-                } else {
-                    boolean[] both = {false, false};
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    if (testNameTextField.getText() == null || testNameTextField.getText().trim().isEmpty()) {
-                        log.info("Введён НЕправильный текст названия теста");
-                        alert.setHeaderText("Введён НЕправильный текст названия теста");
-                        both[0] = true;
-                    }
-                    if (nQuTextField.getText() == null || nQuTextField.getText().trim().isEmpty()) {
-                        log.info("Введён НЕправильный текст количества вопросов");
-                        alert.setHeaderText("Введён НЕправильный текст количества вопросов");
-                        both[1] = true;
-                    }
-
-                    if (both[0] && both[1]) {
-                        log.info("Введён НЕправильный текст названия теста и количества вопросов");
-                        alert.setHeaderText("Введён НЕправильный текст названия теста и количества вопросов");
-                    }
-
-                    alert.showAndWait();
-
-                }
-
-            });
-
-
-//СОЗДАНИЕ ФИНАЛЬНОГО STRING`А ИЗ МАССИВА СОХРАНЕНИЕ В ФАЙЛ
-            saveTestToFile.setOnAction(event1 -> {
-
-                String questionsFmt = "";
-                log.info(questions.toString());
-                for (int i = 0; i < questions[0].length; i++) {
-                    if (i == (nQu - 1)) {
-                        questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log);
-                    }
-                    else {
-                        questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log) + ",";
-                    }
-
-                }
-
-
-                finalTest test = new finalTest();
-
-                test.testName = testNameTextField.getText();
-                log.info("isLoaded on save: " + isLoaded + "\n loadedTestName: " + loadedTestName);
-                if (isLoaded) test.testName = loadedTestName;
-                test.questionsFmt = questionsFmt;
-                test.subjectId = subjectId;
-                endEndResult = test.getFormatedTest();
-
-                log.info("На saveTestToFile" + endEndResult);
-                BufferedWriter bw = null;
-                try {
-                    bw = new BufferedWriter(new OutputStreamWriter(
-                            new FileOutputStream("C:\\ROST_tests\\" + test.testName + ".rost"), "UTF-8"));
-                    primaryStage.setTitle(appName);
-                } catch (UnsupportedEncodingException e) {
-                    primaryStage.setTitle(appName + " Ошибка: неподдерживаемая кодировка");
-                    log.warning(getStackTrace(e));
-                } catch (FileNotFoundException e) {
-                    primaryStage.setTitle(appName + " Ошибка: файл не найден");
-                    log.warning(getStackTrace(e));
-                }
-                try {
-                    bw.write(endEndResult);
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Успех !");
-                    alert.setHeaderText("Тест создан !");
-                    alert.setContentText("Тест \"" + test.testName + "\" успешно создан и сохранён в C:\\ROST_tests\\"
-                            + test.testName + ".rost");
-                    Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image(this.getClass().getResource("successIcon.png").toString()));
-
-
-                    Label label = new Label("Информация для разработчиков");
-                    TextArea textArea = new TextArea(endEndResult);
-                    textArea.setEditable(false);
-                    textArea.setWrapText(true);
-
-                    textArea.setMaxWidth(Double.MAX_VALUE);
-                    textArea.setMaxHeight(Double.MAX_VALUE);
-                    GridPane.setVgrow(textArea, Priority.ALWAYS);
-                    GridPane.setHgrow(textArea, Priority.ALWAYS);
-
-                    GridPane expContent = new GridPane();
-                    expContent.setMaxWidth(Double.MAX_VALUE);
-                    expContent.add(label, 0, 0);
-                    expContent.add(textArea, 0, 1);
-
-
-                    alert.getDialogPane().setExpandableContent(expContent);
-
-                    Optional<ButtonType> result = alert.showAndWait();
-                    try {
-                        if (result.get() == ButtonType.OK) {
-                            File file = new File("C:\\ROST_tests"); //для ОС Windows
-                            Desktop desktop = null;
-
-                            if (Desktop.isDesktopSupported()) {
-                                desktop = Desktop.getDesktop();
-                            }
-                            try {
-                                desktop.open(file);
-                            } catch (IOException e) {
-                                log.warning(getStackTrace(e));
-                            }
-                        } else primaryStage.close();
-                    } catch (Exception e) {
-                        log.warning(getStackTrace(e));
-                    }
-
-
-                } catch (IOException e) {
-                    primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
-                    log.warning(getStackTrace(e));
-                }
-                try {
-                    bw.close();
-                } catch (IOException e) {
-                    primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
-                    log.warning(getStackTrace(e));
-                }
-                primaryStage.close();
-            });
-
-
-            //ДЕЛАЕМ СЦЕНУ
-            Scene scene = new Scene(root, 520, 375);
-
-            primaryStage.setMinWidth(790);
-            primaryStage.setMinHeight(465);
-
-            primaryStage.setScene(scene);
-            grid.setGridLinesVisible(debug);
-            primaryStage.show();
-
-            log.setLevel(Level.ALL);
-            log.info("Started");
+            createMainView(mainStage);
         } catch (Exception e) {
             log.warning(getStackTrace(e));
         }
+    }
+
+    private void createMainView(Stage primaryStage) {
+        root.getChildren().clear();
+        grid.getChildren().clear();
+        grid.setMinHeight(400);
+        grid.setMinWidth(500);
+        root.setCenter(grid);
+
+        addMenuBar(root, primaryStage, stringUpdate);
+
+        TreeItem<File> treeFileView = createNode(new File("C:/ROST_tests"));
+        treeFileView.expandedProperty().setValue(true);
+
+        TreeView treeView = new TreeView<File>(treeFileView);
+
+        EventHandler<MouseEvent> mouseEventHandle = (MouseEvent event) -> {
+            String loadedQu = null;
+            isLoaded = true;
+            Question[] question = loadQuestions(primaryStage, loadFromFile(loadedQu, handleMouseClicked(event, treeView)));
+            questions[0] = openQuestionsEditor(question.length, question, primaryStage, grid);
+        };
+        grid.setGridLinesVisible(debug);
+
+        treeView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEventHandle);
+
+        if (debug) root.setLeft(treeView);
+
+        primaryStage.setTitle(appName);
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+
+        if (debug){
+            grid.add(new Label("ВНИМАНИЕ !!! Вы находитесь в режиме \nразработчика. В этом режиме\nпрограмма работает \nНЕ стабильно. \nЕсли вы не знаете что это, \nперезапустите програму"), 0, 5);
+            Label look = new Label(" <<== ВНИМАНИЕ !!!");
+            grid.add(look, 1, 5);
+        }
+
+        //Заголовок
+        grid.add(scenetitle, 0, 0, 2, 1);
+
+        Button feedback = new Button("Отзыв");
+        feedback.setOnAction(event3 -> sendFeedback());
+        grid.add(feedback, 1, 0);
+
+        //Название теста
+        Label testName = new Label("Название теста:");
+        grid.add(testName, 0, 1);
+        TextField testNameTextField = new TextField();
+        testNameTextField.setPromptText("Озёра. Реки. 8 класс.");
+        Tooltip testNameToolTip = new Tooltip("Впишите сюда название теста.");
+        testNameTextField.setTooltip(testNameToolTip);
+        grid.add(testNameTextField, 1, 1);
+
+        Label nQuLabel = new Label("Количество вопросов:      ");
+        grid.add(nQuLabel, 0, 2);
+        TextField nQuTextField = new TextField();
+        nQuTextField.setPromptText("7");
+        Tooltip nQuToolTip = new Tooltip("Впишите сюда количество вопросов.");
+        nQuTextField.setTooltip(nQuToolTip);
+        grid.add(nQuTextField, 1, 2);
+
+        Label subjectIdLabel = new Label("Выберите предмет");
+        grid.add(subjectIdLabel, 0, 3);
+        ChoiceBox subjectIdChoiceBox = new ChoiceBox();
+        Tooltip subjectIdChoiceBoxTooltip = new Tooltip("Предмет, которому принадлежит тест");
+        subjectIdChoiceBox.setTooltip(subjectIdChoiceBoxTooltip);
+        grid.add(subjectIdChoiceBox, 1, 3);
+        subjectIdChoiceBox.setItems(FXCollections.observableArrayList(
+            /*0*/"Предмета нет в списке",
+            /*1*/"Химия",
+            /*2*/"Природоведение",
+            /*3*/"Обучение здоровью",
+            /*4*/"Биология",
+            /*5*/"Этика и психология семейной жизни",
+            /*6*/"География",
+            /*7*/"Экономика"
+        ));
+        subjectIdChoiceBox.getSelectionModel().selectedIndexProperty().addListener(
+                (ObservableValue<? extends Number> ov, Number old_val, Number new_val) -> {
+                    if (new_val.intValue() == 0) subjectId = 0000;
+                    if (new_val.intValue() == 1) subjectId = 2523;
+                    if (new_val.intValue() == 2) subjectId = 2521;
+                    if (new_val.intValue() == 3) subjectId = 66855;
+                    if (new_val.intValue() == 4) subjectId = 2518;
+                    if (new_val.intValue() == 5) subjectId = 64251;
+                    if (new_val.intValue() == 6) subjectId = 2519;
+                    if (new_val.intValue() == 7) subjectId = 2953;
+                    if (new_val.intValue() == 8) subjectId = 0000;
+                    if (new_val.intValue() == 9) subjectId = 0000;
+                    if (new_val.intValue() == 10) subjectId = 0000;
+                    if (new_val.intValue() == 11) subjectId = 0000;
+                    if (new_val.intValue() == 12) subjectId = 0000;
+                    if (new_val.intValue() == 13) subjectId = 0000;
+
+                }
+        );
+
+
+        //КНОПКА СОЗДАНИЯ ВОПРОСА
+        btn.setText("Далее");
+        grid.add(btn, 1, 4);
+
+
+        btn.setOnAction(event -> {
+            log.info("Test name: " + testNameTextField.getText());
+            log.info("Typed questions number: " + nQuTextField.getText());
+            nQuStr = nQuTextField.getText();
+            boolean fail = false;
+            try {
+                nQu = new Integer(nQuStr);
+            } catch (NumberFormatException e) {
+                fail = true;
+                showAlert(Alert.AlertType.ERROR, "Ошибка", "Неверное значение строки \"Количество вопросов\"", false, new GridPane());
+
+                log.info("Неверное значение строки \"Количество вопросов\"");
+                log.warning(getStackTrace(e));
+            }
+            questions[0] = new Question[nQu];
+            if (testNameTextField.getText() != null && !testNameTextField.getText().trim().isEmpty() && nQuTextField.getText() != null && !nQuTextField.getText().trim().isEmpty() && !fail) {
+                try {
+                    //ЗАПУСКАЕМ ДИАЛОГИ
+                    for (int i = 0; i < nQu; i++) {
+                        questions[0][i] = startMakeMagic(i, primaryStage);
+                    }
+                } catch (Exception e) {
+                    showAlert(Alert.AlertType.ERROR, "Ошибка", e.getMessage(), false, new GridPane());
+                    log.warning(getStackTrace(e));
+                }
+
+                grid.getChildren().clear();
+                GridPane pane = new GridPane();
+                pane.setGridLinesVisible(debug);
+                pane.setAlignment(Pos.CENTER);
+                pane.setVgap(10);
+                pane.setHgap(10);
+                pane.setPadding(new Insets(15, 15, 15, 15));
+
+
+
+                //СОЗДАНИЕ РЕДАКТОРА
+                openQuestionsEditor(nQu, questions[0], primaryStage, pane);
+
+
+
+                //pane.add(saveTestToFile, 2, nQu);
+                primaryStage.setScene(new Scene(new ScrollPane(pane)));
+                primaryStage.setMinHeight(120);
+                primaryStage.setMinWidth(410);
+                primaryStage.show();
+            } else {
+                boolean[] both = {false, false};
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                if (testNameTextField.getText() == null || testNameTextField.getText().trim().isEmpty()) {
+                    log.info("Введён НЕправильный текст названия теста");
+                    alert.setHeaderText("Введён НЕправильный текст названия теста");
+                    both[0] = true;
+                }
+                if (nQuTextField.getText() == null || nQuTextField.getText().trim().isEmpty()) {
+                    log.info("Введён НЕправильный текст количества вопросов");
+                    alert.setHeaderText("Введён НЕправильный текст количества вопросов");
+                    both[1] = true;
+                }
+
+                if (both[0] && both[1]) {
+                    log.info("Введён НЕправильный текст названия теста и количества вопросов");
+                    alert.setHeaderText("Введён НЕправильный текст названия теста и количества вопросов");
+                }
+
+                alert.showAndWait();
+
+            }
+
+        });
+
+
+//СОЗДАНИЕ ФИНАЛЬНОГО STRING`А ИЗ МАССИВА СОХРАНЕНИЕ В ФАЙЛ
+        saveTestToFile.setOnAction(event1 -> {
+
+            String questionsFmt = "";
+            log.info(questions.toString());
+            for (int i = 0; i < questions[0].length; i++) {
+                if (i == (nQu - 1)) {
+                    questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log);
+                }
+                else {
+                    questionsFmt = questionsFmt + questions[0][i].getFormatedResult(log) + ",";
+                }
+
+            }
+
+
+            finalTest test = new finalTest();
+
+            test.testName = testNameTextField.getText();
+            log.info("isLoaded on save: " + isLoaded + "\n loadedTestName: " + loadedTestName);
+            if (isLoaded) test.testName = loadedTestName;
+            test.questionsFmt = questionsFmt;
+            test.subjectId = subjectId;
+            endEndResult = test.getFormatedTest();
+
+            log.info("На saveTestToFile" + endEndResult);
+            BufferedWriter bw = null;
+            try {
+                bw = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream("C:\\ROST_tests\\" + test.testName + ".rost"), "UTF-8"));
+                primaryStage.setTitle(appName);
+            } catch (UnsupportedEncodingException e) {
+                primaryStage.setTitle(appName + " Ошибка: неподдерживаемая кодировка");
+                log.warning(getStackTrace(e));
+            } catch (FileNotFoundException e) {
+                primaryStage.setTitle(appName + " Ошибка: файл не найден");
+                log.warning(getStackTrace(e));
+            }
+            try {
+                bw.write(endEndResult);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Успех !");
+                alert.setHeaderText("Тест создан !");
+                alert.setContentText("Тест \"" + test.testName + "\" успешно создан и сохранён в C:\\ROST_tests\\"
+                        + test.testName + ".rost");
+                Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                stage.getIcons().add(new Image(this.getClass().getResource("successIcon.png").toString()));
+
+
+                Label label = new Label("Информация для разработчиков");
+                TextArea textArea = new TextArea(endEndResult);
+                textArea.setEditable(false);
+                textArea.setWrapText(true);
+
+                textArea.setMaxWidth(Double.MAX_VALUE);
+                textArea.setMaxHeight(Double.MAX_VALUE);
+                GridPane.setVgrow(textArea, Priority.ALWAYS);
+                GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+                GridPane expContent = new GridPane();
+                expContent.setMaxWidth(Double.MAX_VALUE);
+                expContent.add(label, 0, 0);
+                expContent.add(textArea, 0, 1);
+
+
+                alert.getDialogPane().setExpandableContent(expContent);
+
+                Optional<ButtonType> result = alert.showAndWait();
+                try {
+                    if (result.get() == ButtonType.OK) {
+                        File file = new File("C:\\ROST_tests"); //для ОС Windows
+                        Desktop desktop = null;
+
+                        if (Desktop.isDesktopSupported()) {
+                            desktop = Desktop.getDesktop();
+                        }
+                        try {
+                            desktop.open(file);
+                        } catch (IOException e) {
+                            log.warning(getStackTrace(e));
+                        }
+                    } else primaryStage.close();
+                } catch (Exception e) {
+                    log.warning(getStackTrace(e));
+                }
+
+
+            } catch (IOException e) {
+                primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
+                log.warning(getStackTrace(e));
+            }
+            try {
+                bw.close();
+            } catch (IOException e) {
+                primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
+                log.warning(getStackTrace(e));
+            }
+            primaryStage.close();
+        });
+
+
+        //ДЕЛАЕМ СЦЕНУ
+        Scene scene = new Scene(root, 520, 375);
+
+        primaryStage.setMinWidth(790);
+        primaryStage.setMinHeight(465);
+
+        primaryStage.setScene(scene);
+        grid.setGridLinesVisible(debug);
+        primaryStage.show();
+
+        log.setLevel(Level.ALL);
+        log.info("Started");
     }
 
     public void sendFeedback() {
@@ -497,6 +506,8 @@ public class Main extends Application {
         newFile.setOnAction(event -> {
             //Код лля перезапуска приложения
             log.info("Choosed \"New Test\" menu");
+
+            createMainView(mainStage);
         });
 
         MenuItem open = new MenuItem("Открыть...");
@@ -787,16 +798,16 @@ public class Main extends Application {
     }
 
     public Question[] openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
+        pane.getChildren().clear();
+        pane.add(saveTestToFile, 2, nQu);
         for (int i = 0; i < nQu; i++) {
             final int[] n = {i + 1};
-            pane.getChildren().clear();
             Label questionLabel = new Label("Вопрос № " + n[0]);
             Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
             questionButton.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             questionLabel.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             pane.add(questionLabel, 0, i);
             pane.add(questionButton, 1, i);
-            pane.add(saveTestToFile, 2, nQu);
             pane.setGridLinesVisible(debug);
             questionButton.setId(Integer.toString(i));
 
@@ -854,6 +865,7 @@ public class Main extends Application {
                         log);
             });
         }
+        log.info(String.valueOf(pane.getChildren().size()));
         return question;
     }
     public static String getf(){
@@ -973,7 +985,7 @@ public class Main extends Application {
     public void easterEgg() {
         try {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Easter egg");
+            alert.setTitle("О программе");
             alert.setHeaderText("Создатель этой программы - Попов Антон Палович\nУченик МБОУ \"СОШ №62\", 2016.");
             GridPane gr = new GridPane();
             Image img = null;

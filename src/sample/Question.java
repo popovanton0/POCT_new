@@ -1,8 +1,8 @@
 package sample;
 
-import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import sample.popov.PopovUtilites.PopovUtilites;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -47,15 +47,12 @@ public class Question {
             else isSpaceSenseStr = "false";
 
             if (answerType.equals("One") || answerType.equals("Many")) {
-                for (int j = 0; j < checkBoxes.length; j++) {
-                    if (PopovUtilites.stringToBoolean(checkBoxes[j]) == true) {
-                        for (int k = 0; k < checkBoxes.length; k++) {
-                            if (k != j) {
-                                if (PopovUtilites.stringToBoolean(checkBoxes[j]) == true) answerType = "Many";
-                            }
-                        }
-                    }
-                }
+
+                int count = (int) Arrays.stream(checkBoxes)
+                        .filter(s -> PopovUtilites.stringToBoolean(s))
+                        .count();
+
+                if (count > 1)answerType = "Many";
             }
             if (answerType.equals("One")) log.info("Must start \"ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА\"");
             // ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА
