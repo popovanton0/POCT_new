@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="org.apache.directory.studio:org.apache.commons.codec:1.8" type="repository">
+    <properties maven-id="org.apache.directory.studio:org.apache.commons.codec:1.8" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/directory/studio/org.apache.commons.codec/1.8/org.apache.commons.codec-1.8.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.8/commons-codec-1.8.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/findbugs/annotations/1.0.0/annotations-1.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

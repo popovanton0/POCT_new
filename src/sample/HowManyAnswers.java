@@ -1,5 +1,6 @@
 package sample;
 
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,6 +11,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.jsoup.Jsoup;
 import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.io.BufferedWriter;
@@ -17,10 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.logging.Logger;
-
-import org.jsoup.Jsoup;
 
 
 
@@ -103,7 +102,7 @@ public class HowManyAnswers {
             grid.setPadding(new Insets(25, 25, 25, 25));
 
 
-            if (isEditor) saveTextOuToFile(qText, debug, log);
+            if (isEditor) saveTextOuToFile(qText, log);
 
             //CKEditor
             WebView webEditor = new WebView();
@@ -172,7 +171,7 @@ public class HowManyAnswers {
             setAnswerTextFields(isEditor, directInputTextField, answersLoaded, answerField1, answerField2, answerField3, answerField4, answerField5, answerField6, answerField1Compilles, answerField2Compilles, answerField3Compilles, answerField4Compilles, answerField5Compilles, answerField6Compilles, log, checkBoxesLoaded);
 
             //УСТАНАВЛИВАЕМ TOOLPIPE`Ы, ЗАПРЕЩАЕМ НАВОДИТЬ ФОКУС
-            setUpRightAnswerChooses(isEditor, checkBoxesLoaded, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, log);
+            setUpRightAnswerChooses(isEditor, answerType, checkBoxesLoaded, answerChoose1, answerChoose2, answerChoose3, answerChoose4, answerChoose5, answerChoose6, log);
 
 
             final int finalIsSpaceForCompilesTextField = 2;
@@ -187,7 +186,7 @@ public class HowManyAnswers {
             grid.add(btn, 1, 9);
             final Question finalQuestion = question;
             btn.setOnAction(event -> {
-                String[] answers = new String[12];
+                String[] answers = new String[6];
                 String[] checkBoxes = new String[6];
                 boolean isError = false;
                 //ЕСЛИ ОДИН ИЛИ НЕСКОЛЬКО ВАРИАНТОВ ОТВЕТА
@@ -230,12 +229,12 @@ public class HowManyAnswers {
                     }
 
                     if (answerType[0].equals("Compiles")) {
-                        answers[6] = HTMLEntities.htmlentities(answerField1Compilles.getText());
-                        answers[7] = HTMLEntities.htmlentities(answerField2Compilles.getText());
-                        if (nAn >= 3) answers[8] = HTMLEntities.htmlentities(answerField3Compilles.getText());
-                        if (nAn >= 4) answers[9] = HTMLEntities.htmlentities(answerField4Compilles.getText());
-                        if (nAn >= 5) answers[10] = HTMLEntities.htmlentities(answerField5Compilles.getText());
-                        if (nAn == 6) answers[11] = HTMLEntities.htmlentities(answerField6Compilles.getText());
+                        checkBoxes[0] = HTMLEntities.htmlentities(answerField1Compilles.getText());
+                        checkBoxes[1] = HTMLEntities.htmlentities(answerField2Compilles.getText());
+                        if (nAn >= 3) checkBoxes[2] = HTMLEntities.htmlentities(answerField3Compilles.getText());
+                        if (nAn >= 4) checkBoxes[3] = HTMLEntities.htmlentities(answerField4Compilles.getText());
+                        if (nAn >= 5) checkBoxes[4] = HTMLEntities.htmlentities(answerField5Compilles.getText());
+                        if (nAn == 6) checkBoxes[5] = HTMLEntities.htmlentities(answerField6Compilles.getText());
                     }
 
                     if (isError)
@@ -256,12 +255,12 @@ public class HowManyAnswers {
 
                 log.info("Text of " + nQu + "question" + finalQuestion.qText);
                 if (answerType.equals("Compiles") || answerTypeComplies.isSelected())log.info("For Compiles: " +
-                       finalQuestion.answers[0] + " : " + finalQuestion.answers[6] + "\n" +
-                       finalQuestion.answers[1] + " : " + finalQuestion.answers[7] +"\n" +
-                       finalQuestion.answers[2] + " : " + finalQuestion.answers[8] +"\n" +
-                       finalQuestion.answers[3] + " : " + finalQuestion.answers[9] +"\n" +
-                       finalQuestion.answers[4] + " : " + finalQuestion.answers[10] +"\n" +
-                       finalQuestion.answers[5] + " : " + finalQuestion.answers[11]);
+                       finalQuestion.answers[0] + " : " + finalQuestion.checkBoxes[0] + "\n" +
+                       finalQuestion.answers[1] + " : " + finalQuestion.checkBoxes[1] +"\n" +
+                       finalQuestion.answers[2] + " : " + finalQuestion.checkBoxes[2] +"\n" +
+                       finalQuestion.answers[3] + " : " + finalQuestion.checkBoxes[3] +"\n" +
+                       finalQuestion.answers[4] + " : " + finalQuestion.checkBoxes[4] +"\n" +
+                       finalQuestion.answers[5] + " : " + finalQuestion.checkBoxes[5]);
 
 
                 if (nAn != null && !isError) window.close();
@@ -271,7 +270,7 @@ public class HowManyAnswers {
             Scene scene = new Scene(grid, 920, 840);
             window.setScene(scene);
             window.setTitle("Вопрос " + nQu + "(" + howManyQuestions + ")");
-            if (debug) grid.setGridLinesVisible(true);
+            grid.setGridLinesVisible(debug);
             window.showAndWait();
         } catch (Exception e) {
             log.warning(Main.getStackTrace(e));
@@ -504,6 +503,7 @@ public class HowManyAnswers {
                 try {
 
                     answersLoaded[i] = Jsoup.parse(answersLoaded[i].replace("amp;", "").replace("\\n", "")).text();
+                    checkBoxes[i] = Jsoup.parse(checkBoxes[i].replace("amp;", "").replace("\\n", "").replace("\"", "")).text();
 
                     log.info("Formatted Answers: " + answersLoaded[i]);
                 } catch (Exception e) {
@@ -521,7 +521,7 @@ public class HowManyAnswers {
             answerField5.setPromptText("Текст 5 ответа");
             answerField6.setPromptText("Текст 6 ответа");
             if (isEditor) {
-                directInputTextField.setText(checkBoxes[0]);
+                directInputTextField.setText(answersLoaded[0]);
                 answerField1.setText(answersLoaded[0]);
                 answerField2.setText(answersLoaded[1]);
                 answerField3.setText(answersLoaded[2]);
@@ -529,12 +529,12 @@ public class HowManyAnswers {
                 answerField5.setText(answersLoaded[4]);
                 answerField6.setText(answersLoaded[5]);
 
-                answerField1Compilles.setText(answersLoaded[6]);
-                answerField2Compilles.setText(answersLoaded[7]);
-                answerField3Compilles.setText(answersLoaded[8]);
-                answerField4Compilles.setText(answersLoaded[9]);
-                answerField5Compilles.setText(answersLoaded[10]);
-                answerField6Compilles.setText(answersLoaded[11]);
+                answerField1Compilles.setText(checkBoxes[0]);
+                answerField2Compilles.setText(checkBoxes[1]);
+                answerField3Compilles.setText(checkBoxes[2]);
+                answerField4Compilles.setText(checkBoxes[3]);
+                answerField5Compilles.setText(checkBoxes[4]);
+                answerField6Compilles.setText(checkBoxes[5]);
             }
             //setPromtText для полей ввода у соответствия
             answerField1Compilles.setPromptText("Соответствие для 1 ответа");
@@ -548,7 +548,7 @@ public class HowManyAnswers {
         }
     }
 
-    public static void setUpRightAnswerChooses(boolean isEditor, String[] checkBoxes1, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, Logger log) {
+    public static void setUpRightAnswerChooses(boolean isEditor, String[] answerType, String[] checkBoxes1, RadioButton answerChoose1, RadioButton answerChoose2, RadioButton answerChoose3, RadioButton answerChoose4, RadioButton answerChoose5, RadioButton answerChoose6, Logger log) {
         try {
             answerChoose1.setTooltip(new Tooltip("Выберите правильный ответ"));
             answerChoose2.setTooltip(new Tooltip("Выберите правильный ответ"));
@@ -563,7 +563,7 @@ public class HowManyAnswers {
             answerChoose4.setFocusTraversable(false);
             answerChoose5.setFocusTraversable(false);
             answerChoose6.setFocusTraversable(false);
-            if (isEditor) {
+            if (isEditor && !answerType[0].equals("Compiles") && !answerType[0].equals("DirectInput") && !answerType[0].equals("Sort")) {
                 answerChoose1.setSelected(PopovUtilites.stringToBoolean(checkBoxes1[0]));
                 answerChoose2.setSelected(PopovUtilites.stringToBoolean(checkBoxes1[1]));
                 answerChoose3.setSelected(PopovUtilites.stringToBoolean(checkBoxes1[2]));
@@ -727,7 +727,7 @@ public class HowManyAnswers {
         }
     }
 
-    public static String openEditor(String QuOrAn, Integer n, Main main, Boolean debug, Logger log) {
+    /*public static String openEditor(String QuOrAn, Integer n, Main main, Boolean debug, Logger log) {
         String htmlCode = null;
         try {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -738,11 +738,11 @@ public class HowManyAnswers {
             webEditorEngine.setJavaScriptEnabled(true);
             if (!debug) webEditorEngine.load(main.getClass().getResource("ckeditor/index.htm").toString());
             alert.getDialogPane().setContent(webEditor);
-        /*HTMLEditor editor = new HTMLEditor();
+        *//*HTMLEditor editor = new HTMLEditor();
 
         FileChooser fileChooser = new FileChooser();
         File choosenImage = fileChooser.showOpenDialog(primaryStage);
-        String base64 = ImageUtils.encodeToString(choosenImage, "jpeg");*/
+        String base64 = ImageUtils.encodeToString(choosenImage, "jpeg");*//*
 
             //Кнопка БЕЗ РЕДАКТОРА
             ButtonType withoutEditor = new ButtonType("Без редактора");
@@ -761,7 +761,7 @@ public class HowManyAnswers {
             log.warning(Main.getStackTrace(e));
         }
         return htmlCode;
-    }
+    }*/
 
     /*public static Question newEditorOfQu(String qText,
                                          boolean isRegistrSense1,
@@ -1443,7 +1443,7 @@ public class HowManyAnswers {
         return question;
     }*/
 
-    public static void saveTextOuToFile(String qText, boolean debug, Logger log) {
+    public static void saveTextOuToFile(String qText, Logger log) {
         try {
         //Сохраняем текст вопроса в файл
         BufferedWriter bw;

@@ -5,8 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,6 +30,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -49,33 +50,37 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static sample.Crypters.TestCrypter.*;
+
 
 public class Main extends Application {
 
 
-    double version = 2.1;
-    boolean debug = false;
+    private double version = 2.1;
+    private boolean debug = false;
+    private boolean crypt = true;
+    public static final String URL_UPLOAD_WINDOW = "http://net.citycheb.ru/upload";
+    private static final String URL_TO_VIDEO_GUIDE = "http://www.youtube.com/embed/Qhowc1PSO4E?autoplay=1";
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
-    public static final Level LOG_LEVEL = Level.CONFIG;
-    GridPane grid = new GridPane();
-    Button btn = new Button();
-    String nQuStr;
-    Integer nQu;
-    String appName = "POCT";
-    Integer subjectId = 0000;
-    int nCreatedQu;
-    final Question[][] questions = new Question[1][1];
-    finalTest test = new finalTest();
-    Button saveTestToFile = new Button("Сохранить тест в файл");
+    private static final Level LOG_LEVEL = Level.CONFIG;
+    private GridPane grid = new GridPane();
+    private Button btn = new Button();
+    private String nQuStr;
+    private Integer nQu;
+    private String appName = "POCT";
+    private Integer subjectId = 0000;
+    private int nCreatedQu;
+    private final Question[][] questions = new Question[1][1];
+    private Button saveTestToFile = new Button("Сохранить тест в файл");
     private String endEndResult;
-    String loadedTestName = "";
-    String debugText = "";
-    String logsLimit = "50";
-    Text scenetitle = new Text("Создание тестов для РОСТ \nВерсия " + Double.toString(version));
-    static Logger log = Logger.getLogger(Main.class.getName());
+    private String loadedTestName = "";
+    private String debugText = "";
+    private String logsLimit = "50";
+    private Text scenetitle = new Text("Создание тестов для РОСТ \nВерсия " + Double.toString(version));
+    private static Logger log = Logger.getLogger(Main.class.getName());
     private static Sender tlsSender = new Sender("help_review@mail.ru", getVar("ctg 45"));
-    boolean isLoaded = false;
-    Text stringUpdate;
+    private boolean isLoaded = false;
+    private Text stringUpdate;
     private int count = 0;
     private BorderPane root = new BorderPane();
 
@@ -121,11 +126,12 @@ public class Main extends Application {
     }
 
     private void createMainView(Stage primaryStage) {
+        ScrollPane scrollPane = new ScrollPane(grid);
         root.getChildren().clear();
         grid.getChildren().clear();
         grid.setMinHeight(400);
         grid.setMinWidth(500);
-        root.setCenter(grid);
+        root.setCenter(scrollPane);
 
         addMenuBar(root, primaryStage, stringUpdate);
 
@@ -144,7 +150,7 @@ public class Main extends Application {
 
         treeView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEventHandle);
 
-        if (debug) root.setLeft(treeView);
+        root.setLeft(treeView);
 
         primaryStage.setTitle(appName);
         grid.setAlignment(Pos.CENTER);
@@ -218,12 +224,25 @@ public class Main extends Application {
                 }
         );
 
-
         //КНОПКА СОЗДАНИЯ ВОПРОСА
         btn.setText("Далее");
         grid.add(btn, 1, 4);
 
+        // Вводим пароль и сохраняем в массив ps[]
+        if (crypt)inputPasswordDialog();
 
+
+        // Дешифровка тестов
+
+            /*while (true) {
+              if (decryptAllTests().equals("bad")){
+                  inputPasswordDialog(false, primaryStage);
+              }else {
+                  log.info("All tests successfully decrypted");
+                  break;
+              }
+            }*/
+        //КНОПКА СОЗДАНИЯ ВОПРОСА
         btn.setOnAction(event -> {
             log.info("Test name: " + testNameTextField.getText());
             log.info("Typed questions number: " + nQuTextField.getText());
@@ -342,8 +361,8 @@ public class Main extends Application {
                 alert.setContentText("Тест \"" + test.testName + "\" успешно создан и сохранён в C:\\ROST_tests\\"
                         + test.testName + ".rost");
                 Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image(this.getClass().getResource("successIcon.png").toString()));
-
+                stage.getIcons().add(new Image(this.getClass().getResource("icons/successIcon.png").toString()));
+                alert.setGraphic(new ImageView(new Image(this.getClass().getResource("icons/successIcon.png").toString())));
 
                 Label label = new Label("Информация для разработчиков");
                 TextArea textArea = new TextArea(endEndResult);
@@ -393,15 +412,18 @@ public class Main extends Application {
                 primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
                 log.warning(getStackTrace(e));
             }
+            if (crypt)encryptAllTests();
             primaryStage.close();
         });
+
+        if (crypt)primaryStage.setOnCloseRequest(event -> encryptAllTests());
 
 
         //ДЕЛАЕМ СЦЕНУ
         Scene scene = new Scene(root, 520, 375);
 
         primaryStage.setMinWidth(790);
-        primaryStage.setMinHeight(465);
+        primaryStage.setMinHeight(470);
 
         primaryStage.setScene(scene);
         grid.setGridLinesVisible(debug);
@@ -410,6 +432,8 @@ public class Main extends Application {
         log.setLevel(Level.ALL);
         log.info("Started");
     }
+
+
 
     public void sendFeedback() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -479,7 +503,7 @@ public class Main extends Application {
         }
     }
 
-    public String loadFromFile(String loadedQu, File file) {
+    public static String loadFromFile(String loadedQu, File file) {
         if (file != null) {
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
@@ -518,7 +542,13 @@ public class Main extends Application {
 
             String loadedQu = null;
 
-            File file = new FileChooser().showOpenDialog(primaryStage);
+            FileChooser fc = new FileChooser();
+            FileChooser.ExtensionFilter fileExtension =
+                    new FileChooser.ExtensionFilter(
+                            "Тесты РОСТ", "*.rost");
+            fc.getExtensionFilters().add(fileExtension);
+
+            File file = fc.showOpenDialog(primaryStage);
 
             loadedQu = loadFromFile(loadedQu, file);
 
@@ -529,9 +559,26 @@ public class Main extends Application {
         MenuItem exit = new MenuItem("Выход");
         exit.setOnAction(event -> {
             log.warning("Exiting via file menu...");
+            if (crypt)encryptAllTests();
             System.exit(0);
         });
 
+        // Управление тестами
+        javafx.scene.control.Menu testsControl = new javafx.scene.control.Menu("Управление тестами");
+
+        MenuItem uploadTest = new MenuItem("Загрузить тест в РОСТ");
+        uploadTest.setOnAction(event -> {
+            getHostServices().showDocument(URL_UPLOAD_WINDOW);
+        });
+
+        MenuItem changePass = new MenuItem("Сменить пароль");
+        changePass.setOnAction(event -> {
+            changePassword();
+        });
+
+        testsControl.getItems().addAll(uploadTest, changePass);
+
+        // О прграмме
         javafx.scene.control.Menu aboutProgramm = new javafx.scene.control.Menu("О прграмме");
         MenuItem update = new MenuItem("Проверить обновления");
         update.setOnAction(event -> {
@@ -544,13 +591,23 @@ public class Main extends Application {
         MenuItem feedback = new MenuItem("Отправить отзыв");
         feedback.setOnAction(event -> sendFeedback());
 
+        MenuItem help = new MenuItem("Помощь");
+        help.setOnAction(event -> {
+            WebView webview = new WebView();
+            webview.getEngine().load(URL_TO_VIDEO_GUIDE);
+            webview.setPrefSize(640, 390);
+
+            GridPane pane = new GridPane();
+            pane.add(webview, 0, 0);
+            showAlert(Alert.AlertType.INFORMATION, "Видеоурок", "", true, pane);
+        });
+
         MenuItem about = new MenuItem("О программе");
         about.setOnAction(event -> easterEgg());
-        aboutProgramm.getItems().addAll(update, site, feedback, about);
+        aboutProgramm.getItems().addAll(update, site, feedback, help, about);
         //                              временно
-        if (debug)menu.getItems().addAll(newFile, open, new SeparatorMenuItem(), exit);
-        else menu.getItems().addAll(newFile, new SeparatorMenuItem(), exit);
-        menuBar.getMenus().addAll(menu, aboutProgramm);
+        menu.getItems().addAll(newFile, open, new SeparatorMenuItem(), exit);
+        menuBar.getMenus().addAll(menu, testsControl, aboutProgramm);
         root.setTop(menuBar);
     }
 
@@ -585,7 +642,9 @@ public class Main extends Application {
         try {
             for (int j = 0; j < questionsArray.size(); j++) {
                 questions[j] = new Question();
+                //// FIXME: 01.04.2016 NPE при answerType = Many, full_5
                 JsonObject object = (JsonObject) questionsArray.get(j);
+
 
 
                 questions[j].qText = object.getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "").replace("\\n", "");
@@ -610,17 +669,19 @@ public class Main extends Application {
                     // Защита от null (как, например, в прямом вводе)
                     String text = "";
                     try {
+
                         text = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("TEXT").toString().replace("\"", "");
+
                     } catch (Exception e) {
                         log.warning("Catched exception, because text are null");
+                        text = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString().replace("\"", "");
                     }
 
                     answers[k] = text;
-
-                    log.info("Loaded answerText:" + answers[k]);
                     checkBoxes[k] = jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString();
 
-                    log.info("Loaded answerValue:" + jsonAnswers.get(k).getAsJsonObject().getAsJsonPrimitive("VALUE").toString());
+                    log.info("Loaded answerText:" + answers[k]);
+                    log.info("Loaded answerValue:" + checkBoxes[k]);
                 }
                 questions[j].answers = answers;
                 questions[j].checkBoxes = checkBoxes;
@@ -799,17 +860,20 @@ public class Main extends Application {
 
     public Question[] openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
         pane.getChildren().clear();
+        saveTestToFile.setText("Сохранить изменённый тест");
         pane.add(saveTestToFile, 2, nQu);
         for (int i = 0; i < nQu; i++) {
             final int[] n = {i + 1};
             Label questionLabel = new Label("Вопрос № " + n[0]);
-            Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("text-edit.png"))));
+            Button questionButton = new Button("Изменить вопрос", new ImageView(new Image(getClass().getResourceAsStream("icons/text-edit.png"))));
             questionButton.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             questionLabel.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             pane.add(questionLabel, 0, i);
             pane.add(questionButton, 1, i);
             pane.setGridLinesVisible(debug);
             questionButton.setId(Integer.toString(i));
+
+
 
             questionButton.setOnAction(event1 -> {
 
@@ -903,6 +967,7 @@ public class Main extends Application {
         return question;
     }
 
+    // рудимент
     public void crt(Integer nQu) {
         for (int i = 0; i < nQu; i++) {
             int n = i + 1;

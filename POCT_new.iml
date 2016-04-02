@@ -10,7 +10,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.sun.mail:javax.mail:1.5.5" level="project" />
     <orderEntry type="library" name="com.google.code.gson:gson:2.6.2" level="project" />
-    <orderEntry type="library" name="org.apache.ignite:ignite-log4j2:1.5.0.final" level="project" />
     <orderEntry type="library" name="htmlentities" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library name="JUnit4">
@@ -23,5 +22,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="org.jsoup:jsoup:1.8.3" level="project" />
+    <orderEntry type="library" name="org.apache.directory.studio:org.apache.commons.codec:1.8" level="project" />
   </component>
 </module>

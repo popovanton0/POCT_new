@@ -8,6 +8,10 @@
       <element id="extracted-dir" path="$USER_HOME$/Documents/htmlentities.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/sun/mail/javax.mail/1.5.5/javax.mail-1.5.5.jar" path-in-jar="/" />
       <element id="file-copy" path="$PROJECT_DIR$/src/sample/qu.class" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jsoup/jsoup/1.8.3/jsoup-1.8.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.8/commons-codec-1.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/findbugs/annotations/1.0.0/annotations-1.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/directory/studio/org.apache.commons.codec/1.8/org.apache.commons.codec-1.8.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

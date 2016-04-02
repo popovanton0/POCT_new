@@ -1,5 +1,6 @@
 package sample;
 
+import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.util.Arrays;
@@ -101,7 +102,7 @@ public class Question {
                     String answer = "{" +
                             "\"NUMBER\":" + n + "," +
                             "\"TEXT\":\"" + answers[j] + "\"," +
-                            "\"VALUE\":\"<p>" + answers[j + 6] + "</p>\\n\"" +
+                            "\"VALUE\":\"<p>" + checkBoxes[j] + "</p>\\n\"" +
                             "}";
 
                     if (j == (nAn - 1)) ansewrsFmt = ansewrsFmt + answer;
