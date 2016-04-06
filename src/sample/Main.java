@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
-import com.tecnick.htmlutils.htmlentities.HTMLEntities;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -18,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -34,6 +34,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.jsoup.Jsoup;
 import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.awt.*;
@@ -56,9 +57,9 @@ import static sample.Crypters.TestCrypter.*;
 public class Main extends Application {
 
 
-    private double version = 2.1;
+    private double version = 2.3;
     private boolean debug = false;
-    private boolean crypt = true;
+    private boolean isCrypt = true;
     public static final String URL_UPLOAD_WINDOW = "http://net.citycheb.ru/upload";
     private static final String URL_TO_VIDEO_GUIDE = "http://www.youtube.com/embed/Qhowc1PSO4E?autoplay=1";
     String updateUrl = "https://drive.google.com/folderview?id=0B9Ne8mwSPZxYRlJxamZEeVcxUzQ&usp=sharing#list";
@@ -95,8 +96,8 @@ public class Main extends Application {
                     List<String> arg = getParameters().getUnnamed();
                     if (arg.size() != 0) {
                         debugText = arg.get(0);
-                        logsLimit = arg.get(1);
-                        log.info("limit of logs from console: " + logsLimit);
+                        //logsLimit = arg.get(1);
+                        //log.info("limit of logs from console: " + logsLimit);
                         log.info("debugText is: " + debugText);
                     }
                 } catch (Exception e) {
@@ -111,7 +112,7 @@ public class Main extends Application {
             }
             System.setProperty("isDebugModeEnabled", PopovUtilites.booleanToString(debug));
             //Настраиваем лог
-            settingUpLogging(Integer.parseInt(logsLimit));
+            settingUpLogging(/*Integer.parseInt(logsLimit*/2/*)*/);
             log.info("Starting app...");
 
 
@@ -141,9 +142,8 @@ public class Main extends Application {
         TreeView treeView = new TreeView<File>(treeFileView);
 
         EventHandler<MouseEvent> mouseEventHandle = (MouseEvent event) -> {
-            String loadedQu = null;
             isLoaded = true;
-            Question[] question = loadQuestions(primaryStage, loadFromFile(loadedQu, handleMouseClicked(event, treeView)));
+            Question[] question = loadQuestions(primaryStage, loadFromFile(handleMouseClicked(event, treeView)));
             questions[0] = openQuestionsEditor(question.length, question, primaryStage, grid);
         };
         grid.setGridLinesVisible(debug);
@@ -229,19 +229,10 @@ public class Main extends Application {
         grid.add(btn, 1, 4);
 
         // Вводим пароль и сохраняем в массив ps[]
-        if (crypt)inputPasswordDialog();
+        if (isCrypt)inputPasswordDialog();
+        // if (isCrypt)decryptTests(new File(System.getProperty("user.dir") + "\\sample\\logs\\"));
 
 
-        // Дешифровка тестов
-
-            /*while (true) {
-              if (decryptAllTests().equals("bad")){
-                  inputPasswordDialog(false, primaryStage);
-              }else {
-                  log.info("All tests successfully decrypted");
-                  break;
-              }
-            }*/
         //КНОПКА СОЗДАНИЯ ВОПРОСА
         btn.setOnAction(event -> {
             log.info("Test name: " + testNameTextField.getText());
@@ -412,11 +403,17 @@ public class Main extends Application {
                 primaryStage.setTitle(appName + " Ошибка: неизвестная ошибка");
                 log.warning(getStackTrace(e));
             }
-            if (crypt)encryptAllTests();
+            if (isCrypt) encryptTests(new File("C:\\ROST_Tests\\"), "test");
+            // TODO: 04.04.2016 стоит ли шифровать логи ? если появится ошибка шифрования, то я даже не узнаю, в чём проблема.
+            //if (isCrypt)encryptTests(new File(System.getProperty("user.dir") + "\\sample\\logs\\"), "log");
             primaryStage.close();
         });
 
-        if (crypt)primaryStage.setOnCloseRequest(event -> encryptAllTests());
+        if (isCrypt)primaryStage.setOnCloseRequest(event -> {
+            encryptTests(new File("C:\\ROST_Tests\\"), "test");
+            // TODO: 04.04.2016 стоит ли шифровать логи ? если появится ошибка шифрования, то я даже не узнаю, в чём проблема.
+            //if (isCrypt)encryptTests(new File(System.getProperty("user.dir") + "\\sample\\logs\\"), "log");
+        });
 
 
         //ДЕЛАЕМ СЦЕНУ
@@ -437,6 +434,7 @@ public class Main extends Application {
 
     public void sendFeedback() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Отправка отзыва");
         alert.setHeaderText("Отзыв о программе");
         GridPane emailPane = new GridPane();
         emailPane.setGridLinesVisible(debug);
@@ -503,12 +501,12 @@ public class Main extends Application {
         }
     }
 
-    public static String loadFromFile(String loadedQu, File file) {
+    public static String loadFromFile(File file) {
+        String loadedQu = "";
         if (file != null) {
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
                 String sCurrentLine;
-                loadedQu = "";
                 while ((sCurrentLine = br.readLine()) != null) {
                     loadedQu = loadedQu + sCurrentLine;
                 }
@@ -524,7 +522,7 @@ public class Main extends Application {
         MenuBar menuBar = new MenuBar();
 
         //Меню
-        javafx.scene.control.Menu menu = new javafx.scene.control.Menu("Файл");
+        Menu menu = new Menu("Файл");
         MenuItem newFile = new MenuItem("Новый тест");
 
         newFile.setOnAction(event -> {
@@ -550,7 +548,7 @@ public class Main extends Application {
 
             File file = fc.showOpenDialog(primaryStage);
 
-            loadedQu = loadFromFile(loadedQu, file);
+            loadedQu = loadFromFile(file);
 
             Question[] loadedQuestionsFromFile = loadQuestions(primaryStage, loadedQu);
             questions[0] = openQuestionsEditor(loadedQuestionsFromFile.length, loadedQuestionsFromFile, primaryStage, grid);
@@ -559,12 +557,14 @@ public class Main extends Application {
         MenuItem exit = new MenuItem("Выход");
         exit.setOnAction(event -> {
             log.warning("Exiting via file menu...");
-            if (crypt)encryptAllTests();
+            if (isCrypt) encryptTests(new File("C:\\ROST_Tests\\"), "test");
+            // TODO: 04.04.2016 стоит ли шифровать логи ? если появится ошибка шифрования, то я даже не узнаю, в чём проблема.
+            //if (isCrypt)encryptTests(new File(System.getProperty("user.dir") + "\\sample\\logs\\"), "log");
             System.exit(0);
         });
 
         // Управление тестами
-        javafx.scene.control.Menu testsControl = new javafx.scene.control.Menu("Управление тестами");
+        Menu testsControl = new Menu("Управление тестами");
 
         MenuItem uploadTest = new MenuItem("Загрузить тест в РОСТ");
         uploadTest.setOnAction(event -> {
@@ -578,8 +578,23 @@ public class Main extends Application {
 
         testsControl.getItems().addAll(uploadTest, changePass);
 
+        /*// Настройки
+        Menu settings = new Menu("Настройки");
+        settings.setOnAction(event -> {
+            Alert settingsAlert = new Alert(Alert.AlertType.NONE);
+            settingsAlert.setTitle("Настройки");
+            GridPane pane = new GridPane();
+            CheckBox cryptoCheckBox = new CheckBox("Шифрование включено");
+            cryptoCheckBox.setSelected(true);
+            cryptoCheckBox.setOnAction(event1 -> {
+                if (cryptoCheckBox.isSelected()){
+                    isCrypt = true;
+                }
+            });
+        });*/
+
         // О прграмме
-        javafx.scene.control.Menu aboutProgramm = new javafx.scene.control.Menu("О прграмме");
+        Menu aboutProgramm = new Menu("О прграмме");
         MenuItem update = new MenuItem("Проверить обновления");
         update.setOnAction(event -> {
             checkUpdate(true);
@@ -642,7 +657,6 @@ public class Main extends Application {
         try {
             for (int j = 0; j < questionsArray.size(); j++) {
                 questions[j] = new Question();
-                //// FIXME: 01.04.2016 NPE при answerType = Many, full_5
                 JsonObject object = (JsonObject) questionsArray.get(j);
 
 
@@ -724,6 +738,7 @@ public class Main extends Application {
             }
             FileHandler fh;
 
+
             try {
 
                 fh = new FileHandler(myPath.toString(), true);
@@ -736,8 +751,6 @@ public class Main extends Application {
                 log.setLevel(LOG_LEVEL);
                 log.addHandler(fh);
                 log.setUseParentHandlers(false);
-
-
 
                 log.log(Level.WARNING,"Log setting up completed");
 
@@ -858,8 +871,9 @@ public class Main extends Application {
         return sb.toString();
     }
 
-    public Question[] openQuestionsEditor(int nQu, Question[] question, Stage primaryStage,  GridPane pane) {
+    public Question[] openQuestionsEditor(int nQu, Question[] questions, Stage primaryStage,  GridPane pane) {
         pane.getChildren().clear();
+        primaryStage.setMinWidth(970);
         saveTestToFile.setText("Сохранить изменённый тест");
         pane.add(saveTestToFile, 2, nQu);
         for (int i = 0; i < nQu; i++) {
@@ -869,50 +883,48 @@ public class Main extends Application {
             questionButton.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             questionLabel.setTooltip(new Tooltip("Редактировать " + n[0] + " вопрос"));
             pane.add(questionLabel, 0, i);
-            pane.add(questionButton, 1, i);
+            pane.add(questionButton, 2, i);
             pane.setGridLinesVisible(debug);
             questionButton.setId(Integer.toString(i));
 
 
+            Question editingQu = questions[Integer.parseInt(questionButton.getId())];
+            Text questionText = null;
+            try {
+                questionText = new Text(Jsoup.parse(editingQu.qText.replace("amp;", "").replace("\\n", "")).text());
+            } catch (Exception e) {
+                log.info("NPE in openQuestionsEditor, because text of question is null");
+                questionText = new Text("");
+            }
+            questionText.setWrappingWidth(400);
+            pane.add(questionText, 1, i);
+
+            String qText = editingQu.qText;
+            boolean isRegistrSense = editingQu.isRegistrSense;
+            boolean isSpaceSense = editingQu.isSpaceSense;
+            int nAn = editingQu.nAn;
+
+            String answers[] = editingQu.answers;
+
+            String[] checkBoxes = editingQu.checkBoxes;
+            n[0] = editingQu.i;
+            String[] answerType = new String[1];
+            answerType[0] = editingQu.answerType;
+
+            log.info("[ПРИ РЕДАКТИРОВАНИИ " + editingQu.i + " ВОПРОСА]\nТекст " + editingQu.i + " вопроса: " + editingQu.qText);
+            for (int h = 0; h < answers.length; h++) {
+                int j = h + 1;
+                log.info("    Текст " + j + " ответа: " + answers[h]);
+            }
+            for (int h = 0; h < checkBoxes.length; h++) {
+                int j = h + 1;
+                log.info("    Правильность " + j + " ответа: " + checkBoxes[h]);
+            }
+            log.info("    Код " + n[0] + " вопроса: " + editingQu.getFormatedResult(log));
 
             questionButton.setOnAction(event1 -> {
 
-
-                Question editingQu = question[Integer.parseInt(questionButton.getId())];
-
-                String qText = editingQu.qText;
-                boolean isRegistrSense = editingQu.isRegistrSense;
-                boolean isSpaceSense = editingQu.isSpaceSense;
-                int nAn = editingQu.nAn;
-
-                //Отчищаем answers от тегов html
-                for(int j = 0; j < editingQu.answers.length; j++) {
-                    try {
-                        editingQu.answers[j] = HTMLEntities.unhtmlentities(editingQu.answers[j]);
-                    } catch (Exception e) {
-                        log.warning(getStackTrace(e));
-                    }
-                }
-
-                String answers[] = editingQu.answers;
-
-                String[] checkBoxes = editingQu.checkBoxes;
-                n[0] = editingQu.i;
-                String[] answerType = new String[1];
-                answerType[0] = editingQu.answerType;
-
-                    log.info("[ПРИ РЕДАКТИРОВАНИИ " + editingQu.i + " ВОПРОСА]\nТекст " + editingQu.i + " вопроса: " + editingQu.qText);
-                    for (int h = 0; h < answers.length; h++) {
-                        int j = h + 1;
-                        log.info("    Текст " + j + " ответа: " + answers[h]);
-                    }
-                    for (int h = 0; h < checkBoxes.length; h++) {
-                        int j = h + 1;
-                        log.info("    Правильность " + j + " ответа: " + checkBoxes[h]);
-                    }
-                    log.info("    Код " + n[0] + " вопроса: " + editingQu.getFormatedResult(log));
-
-                question[Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
+                questions[Integer.parseInt(questionButton.getId())] = HowManyAnswers.newWindow(
                         n[0],
                         debug,
                         this,
@@ -929,8 +941,8 @@ public class Main extends Application {
                         log);
             });
         }
-        log.info(String.valueOf(pane.getChildren().size()));
-        return question;
+        log.info("Number of elements in \"editing questions\" pane: " + String.valueOf(pane.getChildren().size()));
+        return questions;
     }
     public static String getf(){
         return "jxyl";

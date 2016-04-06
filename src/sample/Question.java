@@ -34,7 +34,7 @@ public class Question {
             }
         }
 
-        System.out.println("На getFormatedResult: " + answerType);
+        log.info("На getFormatedResult: " + answerType);
         String Result = null;
         try {
             String isRegistrSenseStr;
@@ -48,7 +48,7 @@ public class Question {
             else isSpaceSenseStr = "false";
 
             if (answerType.equals("One") || answerType.equals("Many")) {
-
+                // FIXME: 01.04.2016 NPE при answerType = Many, full_5
                 int count = (int) Arrays.stream(checkBoxes)
                         .filter(s -> PopovUtilites.stringToBoolean(s))
                         .count();

@@ -57,6 +57,7 @@ class FlyOutTransition extends Transition {
 
         this.timeline= new Timeline(
                 new KeyFrame(Duration.millis(0), new KeyValue(y, 0, WEB_EASE)),
+                new KeyFrame(Duration.millis(300), new KeyValue(y, 100, WEB_EASE)),
                 new KeyFrame(Duration.millis(700), new KeyValue(y, -600, WEB_EASE))
         );
         xIni=node.getScene().getWindow().getX();
