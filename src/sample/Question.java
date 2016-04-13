@@ -29,6 +29,7 @@ public class Question {
                 answers[j] = HTMLEntities.htmlentities(answers[j]);
                 answers[j] = HTMLEntities.htmlDoubleQuotes(answers[j]);
                 answers[j] = HTMLEntities.htmlSingleQuotes(answers[j]);
+                answers[j] = answers[j].replace("amp;", "").replace("\\n", "");
             } catch (Exception e) {
                 log.warning(e.getLocalizedMessage());
             }
@@ -113,7 +114,7 @@ public class Question {
                     "\"NUMBER\":" + i + "," +
                     "\"COMMENT\":\"\"," +
                     "\"ANSWERTYPE\":\"" + answerType + "\"," +
-                    "\"TEXT\":\"<p>" + qText + "</p>\\n\"," +
+                    "\"TEXT\":\"<p>" + qText.replaceAll("\"","\\\\\"") + "</p>\\n\"," +
                     "\"NAME\":\"Вопрос " + i + "\"," +
                     "\"DIFFICULTID\":6," +
                     "\"ISREGISTRSENSITIVENESS\":" + isRegistrSenseStr + "," +

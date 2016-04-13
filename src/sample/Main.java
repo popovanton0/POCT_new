@@ -35,6 +35,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.jsoup.Jsoup;
+import sample.Crypters.TestCrypter;
 import sample.popov.PopovUtilites.PopovUtilites;
 
 import java.awt.*;
@@ -115,6 +116,12 @@ public class Main extends Application {
             settingUpLogging(/*Integer.parseInt(logsLimit*/2/*)*/);
             log.info("Starting app...");
 
+            // Выводим в лог список файлов в папке с тестами
+            log.info("List files in \"ROST_tests\" folder: ");
+            File[] listFiles = new File("C:\\ROST_Tests\\").listFiles();
+            for (int i = 0; i < listFiles.length; i++) {
+                log.info((i + 1) + ". " + listFiles[i].getName());
+            }
 
             // Проверяем обновления
             checkUpdate(false);
@@ -229,7 +236,7 @@ public class Main extends Application {
         grid.add(btn, 1, 4);
 
         // Вводим пароль и сохраняем в массив ps[]
-        if (isCrypt)inputPasswordDialog();
+        if (isCrypt) TestCrypter.inputPasswordDialog();
         // if (isCrypt)decryptTests(new File(System.getProperty("user.dir") + "\\sample\\logs\\"));
 
 

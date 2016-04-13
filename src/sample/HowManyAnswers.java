@@ -245,6 +245,7 @@ public class HowManyAnswers {
                     checkBoxes[0] = "True";
                 }
                if (!debug) finalQuestion.qText = webEditorEngine.executeScript("CKEDITOR.instances['editor1'].getData()").toString();
+               if (!debug && isEditor) saveTextOuToFile(finalQuestion.qText, log);
                finalQuestion.isRegistrSense = isSence[0];
                finalQuestion.isSpaceSense = isSence[1];
                finalQuestion.nAn = nAn;
