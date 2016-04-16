@@ -2,5 +2,6 @@
     "version": 2.3,
     "msgToUpdate": "Доступно обновление !",
     "msgNoUpdate": "Обновлений нет",
-    "url": "https://github.com/popovanton0/POCT_new/releases/download/2.3-beta/setup.exe"
+    "url": "https://github.com/popovanton0/POCT_new/releases/download/2.3-beta/setup.exe",
+    "json":"c3ee25f88a3141a5b39bf4bfd789d803"
 }
